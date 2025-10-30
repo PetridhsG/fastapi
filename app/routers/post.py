@@ -63,7 +63,7 @@ def get_post(
             detail=f"Post with id: {id} not found",
         )
 
-    return post
+    return schemas.PostOut(post=post[0], votes=post[1])
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
