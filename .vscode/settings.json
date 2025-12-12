@@ -1,3 +1,27 @@
 {
-    "postman.settings.dotenv-detection-notification-visibility": false
+  // --- Interpreter ---
+  "python.defaultInterpreterPath": "venv\\Scripts\\python.exe",
+
+  // --- Auto imports ---
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.autoImportUserSymbols": true,
+  "python.analysis.indexing": true,
+
+  // --- Formatting ---
+  "python.formatting.provider": "black",
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+
+  // --- Language server ---
+  "python.languageServer": "Pylance",
+  "python.testing.pytestArgs": [
+    "tests"
+  ],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true
 }
