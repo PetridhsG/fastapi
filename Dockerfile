@@ -9,6 +9,9 @@ WORKDIR /app
 # Copy only project files needed to install dependencies
 COPY pyproject.toml uv.lock ./
 
+# Install libpq-dev and build tools
+RUN apt-get update && apt-get install -y libpq-dev gcc
+
 # Install dependencies
 RUN uv sync --frozen
 
