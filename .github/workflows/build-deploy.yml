@@ -55,6 +55,12 @@ jobs:
       # Upgrade pip
       - name: Upgrade pip
         run: python -m pip install --upgrade pip
+      
+      # Install UV package manager
+      - name: Install UV
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install uv
 
       # Install testing tools using uv
       - name: Install test tools
