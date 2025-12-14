@@ -1,16 +1,34 @@
+import logging
+import logging.config
+
 from fastapi import FastAPI
+from fastapi.concurrency import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.health import router as health_router
-from app.core.logging import logger
+from app.core.logging import LOGGING_CONFIG
 
-prefix = "/api/v1"
+v1_prefix = "/api/v1"
 
 
+logging.config.dictConfig(LOGGING_CONFIG)
+logger = logging.getLogger("fastapi_app")
+
+
+# Define lifespan events for startup and shutdown logging
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("Application startup")
+    yield
+    logger.info("Application shutdown")
+
+
+# Create FastAPI application instance
 app = FastAPI(
     title="FastAPI Social Media Backend",
     description="Backend API for posts, followers, comments, and reactions",
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 # Set up CORS middleware
@@ -23,9 +41,7 @@ app.add_middleware(
 )
 
 # Include API routers
-app.include_router(health_router, prefix=prefix)
-
-logger.info("FastAPI application initialized")
+app.include_router(health_router, prefix=v1_prefix)
 
 
 @app.get("/")

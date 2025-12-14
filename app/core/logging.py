@@ -1,36 +1,51 @@
 import logging
 from datetime import datetime
-from zoneinfo import ZoneInfo  # Python 3.9+
+from zoneinfo import ZoneInfo
+
+TZ = ZoneInfo("Europe/Athens")
 
 
 class TZFormatter(logging.Formatter):
-    def __init__(self, fmt=None, datefmt=None, tz: str = "Europe/Athens"):
-        super().__init__(fmt, datefmt)
-        self.tz = ZoneInfo(tz)
-
     def formatTime(self, record, datefmt=None):
-        dt = datetime.fromtimestamp(record.created, tz=self.tz)
+        dt = datetime.fromtimestamp(record.created, tz=TZ)
         if datefmt:
             return dt.strftime(datefmt)
         return dt.isoformat()
 
-
-def setup_logging():
-    logger = logging.getLogger("fastapi_app")
-    logger.setLevel(logging.INFO)
-
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.INFO)
-
-    formatter = TZFormatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-        tz="Europe/Athens",
-    )
-    ch.setFormatter(formatter)
-    logger.addHandler(ch)
-
-    return logger
+    def format(self, record):
+        time_str = self.formatTime(record, self.datefmt)
+        return (
+            f"{record.levelname} - {time_str} - {record.name} - {record.getMessage()}"
+        )
 
 
-logger = setup_logging()
+LOGGING_CONFIG = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "default": {"()": TZFormatter, "datefmt": "%Y-%m-%d %H:%M:%S"},
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "default",
+            "level": "INFO",
+        },
+    },
+    "root": {"handlers": ["console"], "level": "INFO"},  # Root logger prints everything
+    "loggers": {
+        "uvicorn.error": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+            "formatter": "default",
+        },
+        "fastapi_app": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+            "formatter": "default",
+        },
+        # Do NOT configure uvicorn.access
+    },
+}
