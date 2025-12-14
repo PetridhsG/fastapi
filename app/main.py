@@ -1,18 +1,11 @@
-import logging
-import logging.config
-
 from fastapi import FastAPI
 from fastapi.concurrency import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.health import router as health_router
-from app.core.logging import LOGGING_CONFIG
+from app.core.logging import logger
 
 v1_prefix = "/api/v1"
-
-
-logging.config.dictConfig(LOGGING_CONFIG)
-logger = logging.getLogger("fastapi_app")
 
 
 # Define lifespan events for startup and shutdown logging

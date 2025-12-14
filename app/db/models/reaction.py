@@ -14,7 +14,7 @@ class Reaction(Base):
     post_id = Column(
         Integer, ForeignKey("posts.id", ondelete="CASCADE"), primary_key=True
     )
-    type = Column(Enum(ReactionType), nullable=False)
+    type = Column(Enum(ReactionType, name="reaction_type"), nullable=False)
 
     user = relationship("User", back_populates="reactions")
     post = relationship("Post", back_populates="reactions")
