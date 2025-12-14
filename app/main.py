@@ -2,10 +2,10 @@ from fastapi import FastAPI
 from fastapi.concurrency import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.v1.health import router as health_router
+from app.api.v1 import router as api_v1_router
 from app.core.logging import logger
 
-v1_prefix = "/api/v1"
+api_v1_router_prefix = "/api/v1"
 
 
 # Define lifespan events for startup and shutdown logging
@@ -34,7 +34,7 @@ app.add_middleware(
 )
 
 # Include API routers
-app.include_router(health_router, prefix=v1_prefix)
+app.include_router(api_v1_router, prefix=api_v1_router_prefix)
 
 
 @app.get("/")

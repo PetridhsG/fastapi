@@ -1,0 +1,10 @@
+{
+  "ignoreGlob": [
+    "**/venv/**",
+    "**/__pycache__/**",
+    "**/.git/**"
+  ],
+  "languages": [
+    "python"
+  ]
+}

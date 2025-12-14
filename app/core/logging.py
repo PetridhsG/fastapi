@@ -46,7 +46,6 @@ LOGGING_CONFIG = {
             "propagate": False,
             "formatter": "default",
         },
-        # Do NOT configure uvicorn.access
     },
 }
 
