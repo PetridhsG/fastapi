@@ -9,11 +9,13 @@ from sqlalchemy import engine_from_config, pool
 from alembic import context
 from app.core.config import settings
 from app.db.database import Base
-from app.db.models.comment import Comment  # noqa: F401
-from app.db.models.follow import Follow  # noqa: F401
-from app.db.models.post import Post  # noqa: F401
-from app.db.models.reaction import Reaction  # noqa: F401
-from app.db.models.user import User  # noqa: F401
+from app.db.models import (
+    Comment,  # noqa: F401
+    Follow,  # noqa: F401
+    Post,  # noqa: F401
+    Reaction,  # noqa: F401
+    User,  # noqa: F401
+)
 
 config = context.config
 
