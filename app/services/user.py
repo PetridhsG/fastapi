@@ -2,7 +2,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.api.v1.schemas.user import UserCreate
-from app.core.exceptions.user import UserEmailAlreadyExists
+from app.core.exceptions.user import UserEmailAlreadyExists, UserNotFound
 from app.core.security.password import hash_password
 from app.db.models import User
 
@@ -29,3 +29,12 @@ class UserService:
             raise UserEmailAlreadyExists
 
         return new_user
+
+    def get_user(self, user_id: int) -> User:
+        """Retrieve a user by their ID."""
+
+        user = self.db.query(User).filter(User.id == user_id).first()
+
+        if not user:
+            raise UserNotFound
+        return user

@@ -17,6 +17,7 @@ dependencies = [
     "ruff>=0.14.9",
     "sqlalchemy>=2.0.45",
     "uvicorn>=0.38.0",
+    "python-multipart>=0.0.21",
 ]
 
 [dependency-groups]

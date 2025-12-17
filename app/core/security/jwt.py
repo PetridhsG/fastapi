@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
+from fastapi import HTTPException
 from jose import JWTError, jwt
 
 from app.api.v1.schemas.auth import TokenData
@@ -9,8 +10,14 @@ SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = settings.ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 
+credentials_exception = HTTPException(
+    status_code=401,
+    detail="Could not validate credentials",
+    headers={"WWW-Authenticate": "Bearer"},
+)
 
-def create_access_token(data: dict) -> str:
+
+def create_access_token(data: dict):
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
@@ -19,9 +26,11 @@ def create_access_token(data: dict) -> str:
 
 
 def verify_access_token(token: str) -> TokenData:
-    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    user_id = payload.get("user_id")
-    if user_id is None:
-        raise JWTError()
-    token_data = TokenData(id=user_id)
-    return token_data
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("user_id")
+        if not user_id:
+            raise credentials_exception
+        return TokenData(user_id=user_id)
+    except JWTError:
+        raise credentials_exception
