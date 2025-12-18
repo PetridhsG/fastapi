@@ -3,7 +3,7 @@ from fastapi.concurrency import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1 import router as api_v1_router
-from app.core.logging import logger
+from app.core.logger import logger
 
 api_v1_router_prefix = "/api/v1"
 

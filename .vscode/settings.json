@@ -19,10 +19,13 @@
 
   // --- Language server ---
   "python.languageServer": "Pylance",
-  "python.testing.pytestArgs": [
-    "tests"
-  ],
-  "python.testing.unittestEnabled": false,
+
+  // --- Testing ---
   "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestArgs": ["tests"],
+  "python.envFile": "${workspaceFolder}/.env.test",
+
+  // --- Misc ---
   "postman.settings.dotenv-detection-notification-visibility": false
 }

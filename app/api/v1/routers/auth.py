@@ -28,4 +28,3 @@ def login_user(
         )
 
     return auth_token
-    auth_service.login_user(user_credentials)

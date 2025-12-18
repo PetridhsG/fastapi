@@ -1,4 +1,3 @@
-import re
 from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
@@ -12,7 +11,7 @@ class UserCreate(BaseModel):
 
     @field_validator("password")
     @classmethod
-    def oassword_strength(cls, v: str) -> str:
+    def password_strength(cls, v: str) -> str:
         return validate_password(v)
 
 

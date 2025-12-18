@@ -1,4 +1,5 @@
 import logging
+import logging.config
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -32,7 +33,7 @@ LOGGING_CONFIG = {
             "level": "INFO",
         },
     },
-    "root": {"handlers": ["console"], "level": "INFO"},  # Root logger prints everything
+    "root": {"handlers": ["console"], "level": "INFO"},
     "loggers": {
         "uvicorn.error": {
             "handlers": ["console"],
