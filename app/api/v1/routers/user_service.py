@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from app.api.v1.dependencies import get_current_user, get_user_service
 from app.api.v1.schemas.user import UserCreate, UserOut
 from app.core.exceptions.user import UserEmailAlreadyExists, UserNotFound
-from app.services.user import UserService
+from app.services.user_service import UserService
 
 prefix = "/users"
 router = APIRouter(prefix=prefix, tags=["Users"])

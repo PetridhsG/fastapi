@@ -2,8 +2,8 @@ import pytest
 from sqlalchemy.orm import Session
 
 from app.api.v1.schemas.user import UserCreate
-from app.services.auth import AuthService
-from app.services.user import UserService
+from app.services.auth_service import AuthService
+from app.services.user_service import UserService
 
 
 @pytest.fixture

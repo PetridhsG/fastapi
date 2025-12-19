@@ -4,11 +4,9 @@
 
   // --- Auto imports ---
   "python.analysis.autoImportCompletions": true,
-  "python.analysis.autoImportUserSymbols": true,
   "python.analysis.indexing": true,
 
   // --- Formatting ---
-  "python.formatting.provider": "black",
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter",
     "editor.formatOnSave": true,

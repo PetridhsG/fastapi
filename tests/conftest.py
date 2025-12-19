@@ -11,7 +11,7 @@ from tests.fixtures.services_fixtures import *  # noqa: F403
 
 
 class TestSettings(Settings):
-    model_config = SettingsConfigDict(env_file=".env.test")
+    model_config = SettingsConfigDict(env_file=".env.test", extra="ignore")
 
 
 # Load test settings

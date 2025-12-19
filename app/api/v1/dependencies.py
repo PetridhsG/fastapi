@@ -6,8 +6,8 @@ from app.core.exceptions.user import UserNotFound
 from app.core.security.jwt import verify_access_token
 from app.db.database import get_db
 from app.db.models import User
-from app.services.auth import AuthService
-from app.services.user import UserService
+from app.services.auth_service import AuthService
+from app.services.user_service import UserService
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 

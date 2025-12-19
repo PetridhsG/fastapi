@@ -4,7 +4,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from app.api.v1.dependencies import get_auth_service
 from app.api.v1.schemas.auth import Token
 from app.core.exceptions.auth import InvalidLoginCredentials
-from app.services.auth import AuthService
+from app.services.auth_service import AuthService
 
 router = APIRouter(tags=["Authentication"])
 

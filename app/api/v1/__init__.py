@@ -1,13 +1,19 @@
 from fastapi import APIRouter
 
-from .routers import auth, comment, follow, health, post, reaction, user
+from .routers import (
+    auth_router,
+    comment_service,
+    follow_service,
+    post_service,
+    reaction_service,
+    user_service,
+)
 
 router = APIRouter()
 
-router.include_router(auth.router)
-router.include_router(user.router)
-router.include_router(post.router)
-router.include_router(comment.router)
-router.include_router(follow.router)
-router.include_router(reaction.router)
-router.include_router(health.router)
+router.include_router(auth_router.router)
+router.include_router(user_service.router)
+router.include_router(post_service.router)
+router.include_router(comment_service.router)
+router.include_router(follow_service.router)
+router.include_router(reaction_service.router)

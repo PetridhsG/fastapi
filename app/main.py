@@ -41,3 +41,8 @@ app.include_router(api_v1_router, prefix=api_v1_router_prefix)
 def root():
     logger.info("Root endpoint accessed")
     return {"message": "Root Endpoint - FastAPI Application"}
+
+
+@app.get("/api/v1/health")
+def health_check():
+    return {"status": "ok"}

@@ -2,7 +2,7 @@ import pytest
 
 from app.api.v1.schemas.user import UserCreate
 from app.core.exceptions.user import UserEmailAlreadyExists, UserNotFound
-from app.services.user import UserService
+from app.services.user_service import UserService
 
 
 def test_create_user_success(user_service: UserService):
