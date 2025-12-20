@@ -22,9 +22,21 @@ def auth_service(session: Session) -> AuthService:
 def test_users(user_service: UserService):
     """Creates three test users using UserCreate schema."""
     users_data = [
-        UserCreate(email="user1@example.com", password="User1Pass!"),
-        UserCreate(email="user2@example.com", password="User2Pass!"),
-        UserCreate(email="user3@example.com", password="User3Pass!"),
+        UserCreate(
+            username="exampleUser1", email="user1@example.com", password="User1Pass!"
+        ),
+        UserCreate(
+            username="exampleUser2",
+            email="user2@example.com",
+            password="User2Pass!",
+            bio="This is user 2's bio.",
+            is_private=True,
+        ),
+        UserCreate(
+            username="exampleUser3",
+            email="user3@example.com",
+            password="User3Pass!",
+        ),
     ]
 
     users = [user_service.create_user(u) for u in users_data]

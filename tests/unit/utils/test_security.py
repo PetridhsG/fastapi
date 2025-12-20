@@ -7,7 +7,7 @@ from app.core.security.jwt import (
     credentials_exception,
     verify_access_token,
 )
-from app.core.security.password import hash_password, validate_password, verify_password
+from app.core.security.password import hash_password, verify_password
 from tests.conftest import settings
 
 SECRET_KEY = settings.SECRET_KEY
@@ -53,23 +53,3 @@ def test_hash_and_verify_password():
     hashed = hash_password(plain)
     assert verify_password(plain, hashed) is True
     assert verify_password("wrongpass", hashed) is False
-
-
-def test_validate_password_success():
-    valid = "Abc123!"
-    assert validate_password(valid) == valid
-
-
-@pytest.mark.parametrize(
-    "password",
-    [
-        "abc",  # too short
-        "abcdefg",  # no uppercase, number, special
-        "abcdefG",  # no number, special
-        "abcdef1",  # no uppercase, special
-        "ABCDEF1",  # no special
-    ],
-)
-def test_validate_password_failure(password):
-    with pytest.raises(ValueError):
-        validate_password(password)

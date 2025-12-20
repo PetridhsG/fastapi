@@ -5,6 +5,10 @@ import pytest
 from app.core.exceptions.auth import InvalidLoginCredentials
 from app.services.auth_service import AuthService
 
+# -----------------------------
+# Login user tests
+# -----------------------------
+
 
 def test_login_user_success(auth_service, test_users):
     user = test_users[0]

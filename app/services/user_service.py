@@ -2,7 +2,12 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.api.v1.schemas.user import UserCreate
-from app.core.exceptions.user import UserEmailAlreadyExists, UserNotFound
+from app.core.exceptions.user import (
+    UserAlreadyExists,
+    UserEmailAlreadyExists,
+    UsernameAlreadyExists,
+    UserNotFound,
+)
 from app.core.security.password import hash_password
 from app.db.models import User
 
@@ -13,6 +18,13 @@ class UserService:
 
     def create_user(self, user_create: UserCreate) -> User:
         """Create a new user and hash password; raises UserAlreadyExists on duplicate email."""
+
+        if self.db.query(User).filter(User.email == user_create.email).first():
+            raise UserEmailAlreadyExists
+
+        if self.db.query(User).filter(User.username == user_create.username).first():
+            raise UsernameAlreadyExists
+
         hashed_password = hash_password(user_create.password)
         user_data = user_create.model_dump()
         user_data["hashed_password"] = hashed_password
@@ -25,8 +37,9 @@ class UserService:
             self.db.commit()
             self.db.refresh(new_user)
         except IntegrityError:
+            # Safety net for race conditions
             self.db.rollback()
-            raise UserEmailAlreadyExists
+            raise UserAlreadyExists
 
         return new_user
 

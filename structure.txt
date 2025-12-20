@@ -1,9 +1,18 @@
 ├── .dockerignore
 ├── .env
+├── .env.test
 ├── .github
 │   └── workflows
 │       └── build-deploy.yml
 ├── .gitignore
+├── .pytest_cache
+│   ├── .gitignore
+│   ├── CACHEDIR.TAG
+│   ├── README.md
+│   └── v
+│       └── cache
+│           ├── lastfailed
+│           └── nodeids
 ├── .python-version
 ├── .vscode
 │   ├── counter.json
@@ -23,22 +32,32 @@
 │   │   ├── __init__.py
 │   │   └── v1
 │   │       ├── __init__.py
+│   │       ├── dependencies.py
 │   │       ├── routers
 │   │       │   ├── __init__.py
-│   │       │   ├── auth.py
-│   │       │   ├── comment.py
-│   │       │   ├── follow.py
-│   │       │   ├── health.py
-│   │       │   ├── post.py
-│   │       │   ├── reaction.py
-│   │       │   └── user.py
+│   │       │   ├── auth_router.py
+│   │       │   ├── comment_router.py
+│   │       │   ├── follow_router.py
+│   │       │   ├── post_router.py
+│   │       │   ├── reaction_router.py
+│   │       │   └── user_router.py
 │   │       └── schemas
-│   │           └── __init__.py
+│   │           ├── __init__.py
+│   │           ├── auth.py
+│   │           └── user.py
 │   ├── core
 │   │   ├── __init__.py
 │   │   ├── config.py
 │   │   ├── enums.py
-│   │   └── logging.py
+│   │   ├── exceptions
+│   │   │   ├── __init__.py
+│   │   │   ├── auth.py
+│   │   │   └── user.py
+│   │   ├── logger.py
+│   │   └── security
+│   │       ├── __init__.py
+│   │       ├── jwt.py
+│   │       └── password.py
 │   ├── db
 │   │   ├── __init__.py
 │   │   ├── database.py
@@ -66,10 +85,43 @@
 ├── scripts
 │   ├── enter-api.sh
 │   ├── enter-db.sh
+│   ├── enter-testdb.sh
 │   ├── run-app.sh
-│   └── stop-app.sh
+│   ├── stop-app.sh
+│   └── upgrade-db.sh
 ├── structure.txt
 ├── tests
 │   ├── __init__.py
-│   └── test_app.py
+│   ├── conftest.py
+│   ├── fixtures
+│   │   ├── __init__.py
+│   │   └── services_fixtures.py
+│   ├── helpers
+│   │   └── __init__.py
+│   ├── integration
+│   │   ├── __init__.py
+│   │   ├── api
+│   │   │   ├── __init__.py
+│   │   │   └── v1
+│   │   │       ├── __init__.py
+│   │   │       ├── test_auth_router.py
+│   │   │       ├── test_comments_router.py
+│   │   │       ├── test_follows_router.py
+│   │   │       ├── test_posts_router.py
+│   │   │       ├── test_reactions_router.py
+│   │   │       └── test_users_router.py
+│   │   └── db
+│   └── unit
+│       ├── __init__.py
+│       ├── services
+│       │   ├── __init__.py
+│       │   ├── test_auth_service.py
+│       │   ├── test_comment_service.py
+│       │   ├── test_follow_service.py
+│       │   ├── test_post_service.py
+│       │   ├── test_reaction_service.py
+│       │   └── test_user_service.py
+│       └── utils
+│           ├── __init__.py
+│           └── test_security.py
 └── uv.lock

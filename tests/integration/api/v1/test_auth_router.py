@@ -1,6 +1,10 @@
 import pytest  # noqa: F401
 from fastapi import status
 
+# -----------------------------
+# Login user tests
+# -----------------------------
+
 
 def test_login_success(client, test_users):
     user = test_users[0]

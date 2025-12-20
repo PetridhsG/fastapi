@@ -2,7 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.v1.dependencies import get_current_user, get_user_service
 from app.api.v1.schemas.user import UserCreate, UserOut
-from app.core.exceptions.user import UserEmailAlreadyExists, UserNotFound
+from app.core.exceptions.user import (
+    UserAlreadyExists,
+    UserEmailAlreadyExists,
+    UsernameAlreadyExists,
+    UserNotFound,
+)
 from app.services.user_service import UserService
 
 prefix = "/users"
@@ -16,10 +21,12 @@ router = APIRouter(prefix=prefix, tags=["Users"])
     response_model=UserOut,
 )
 def create_user(
-    user: UserCreate, user_service: UserService = Depends(get_user_service)
+    user: UserCreate,
+    user_service: UserService = Depends(get_user_service),
 ):
     try:
         new_user = user_service.create_user(user)
+
     except UserEmailAlreadyExists:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -27,6 +34,25 @@ def create_user(
                 "error": "user_email_already_exists",
                 "message": "A user with this email already exists.",
                 "field": "email",
+            },
+        )
+
+    except UsernameAlreadyExists:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={
+                "error": "username_already_exists",
+                "message": "This username is already taken.",
+                "field": "username",
+            },
+        )
+
+    except UserAlreadyExists:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "error": "user_creation_failed",
+                "message": "Unable to create user.",
             },
         )
 
