@@ -1,12 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.v1.dependencies import get_current_user, get_user_service
-from app.api.v1.schemas.user import UserCreate, UserOut
+from app.api.v1.schemas.user import UserCreate, UserOut, UserSearchOut
 from app.core.exceptions.user import (
     UserAlreadyExists,
     UserEmailAlreadyExists,
     UsernameAlreadyExists,
-    UserNotFound,
 )
 from app.services.user_service import UserService
 
@@ -60,23 +59,14 @@ def create_user(
 
 
 @router.get(
-    "/{user_id}",
-    summary="Get user by ID",
-    status_code=status.HTTP_200_OK,
-    response_model=UserOut,
+    "",
+    summary="Search users by username",
+    response_model=list[UserSearchOut],
 )
-def get_user(
-    user_id: int,
-    user_service: UserService = Depends(get_user_service),
+def search_users(
+    query: str,
     current_user=Depends(get_current_user),
+    user_service: UserService = Depends(get_user_service),
 ):
-    print(f"Current user ID: {current_user.id}")
-    try:
-        user = user_service.get_user(user_id)
-    except UserNotFound:
-
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": "user_not_found", "message": "User not found."},
-        )
-    return user
+    users = user_service.search_users(current_user.id, query)
+    return users

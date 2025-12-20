@@ -45,6 +45,15 @@ class UserCreate(BaseModel):
         return v
 
 
+class UserSearchOut(BaseModel):
+    id: int
+    username: str
+    is_following: bool
+    followers_count: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class UserOut(BaseModel):
     id: int
     email: EmailStr

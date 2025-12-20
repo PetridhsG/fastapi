@@ -1,12 +1,13 @@
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from typing import List
 
-from app.api.v1.schemas.user import UserCreate
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session, joinedload
+
+from app.api.v1.schemas.user import UserCreate, UserSearchOut
 from app.core.exceptions.user import (
     UserAlreadyExists,
     UserEmailAlreadyExists,
     UsernameAlreadyExists,
-    UserNotFound,
 )
 from app.core.security.password import hash_password
 from app.db.models import User
@@ -18,7 +19,6 @@ class UserService:
 
     def create_user(self, user_create: UserCreate) -> User:
         """Create a new user and hash password; raises UserAlreadyExists on duplicate email."""
-
         if self.db.query(User).filter(User.email == user_create.email).first():
             raise UserEmailAlreadyExists
 
@@ -43,11 +43,32 @@ class UserService:
 
         return new_user
 
-    def get_user(self, user_id: int) -> User:
-        """Retrieve a user by their ID."""
+    def search_users(self, current_user_id: int, query: str) -> List[UserSearchOut]:
+        """
+        Search users by username and return minimal info + follow info.
+        """
+        users = (
+            self.db.query(User)
+            .options(joinedload(User.followers))
+            .filter(User.username.ilike(f"%{query}%"))
+            .all()
+        )
 
-        user = self.db.query(User).filter(User.id == user_id).first()
+        results: List[UserSearchOut] = []
 
-        if not user:
-            raise UserNotFound
-        return user
+        for user in users:
+            is_following = any(
+                f.follower_id == current_user_id and f.accepted for f in user.followers
+            )
+            followers_count = sum(f.accepted for f in user.followers)
+
+            results.append(
+                UserSearchOut(
+                    id=user.id,
+                    username=user.username,
+                    is_following=is_following,
+                    followers_count=followers_count,
+                )
+            )
+
+        return results

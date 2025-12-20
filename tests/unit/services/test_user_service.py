@@ -5,7 +5,6 @@ from app.core.exceptions.user import (
     UserAlreadyExists,
     UserEmailAlreadyExists,
     UsernameAlreadyExists,
-    UserNotFound,
 )
 from app.services.user_service import UserService
 
@@ -86,17 +85,26 @@ def test_create_user_duplicate_email_and_username(
 
 
 # -----------------------------
-# Get user tests
+# Search user tests
 # -----------------------------
+def test_search_users_found(user_service: UserService, test_users):
+    current_user = test_users[0]
+    query = "example"
+
+    results = user_service.search_users(current_user.id, query)
+
+    assert len(results) == 2
+    for user_out in results:
+        assert "example" in user_out.username
+        assert user_out.followers_count == 0
+        assert user_out.is_following is False
 
 
-def test_get_user_success(user_service: UserService, test_users):
-    existing_user = test_users[0]
-    user = user_service.get_user(existing_user.id)
-    assert user.id == existing_user.id
-    assert user.email == existing_user.email
+def test_search_users_not_found(user_service: UserService, test_users):
+    current_user = test_users[0]
+    query = "nonexistent"
 
+    results = user_service.search_users(current_user.id, query)
 
-def test_get_user_not_found(user_service: UserService):
-    with pytest.raises(UserNotFound):
-        user_service.get_user(999999)
+    assert len(results) == 0
+    assert results == []

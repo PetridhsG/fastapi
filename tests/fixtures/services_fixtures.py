@@ -33,7 +33,7 @@ def test_users(user_service: UserService):
             is_private=True,
         ),
         UserCreate(
-            username="exampleUser3",
+            username="anotheruser3",
             email="user3@example.com",
             password="User3Pass!",
         ),
