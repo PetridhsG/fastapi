@@ -20,3 +20,21 @@ class UserNotFound(Exception):
     """Raised when a user is not found in the database."""
 
     pass
+
+
+class UserNotAllowed(Exception):
+    """Raised when a user is not allowed to perform an action due to privacy settings."""
+
+    pass
+
+
+class InvalidPassword(Exception):
+    """Raised when a password is invalid."""
+
+    pass
+
+
+class PasswordUnchanged(Exception):
+    """Raised when the new password is the same as the current password."""
+
+    pass

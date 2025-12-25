@@ -1,14 +1,44 @@
+# ===============================
 # Python-generated files
+# ===============================
 __pycache__/
-*.py[oc]
+*.pyc
+*.pyo
+*.pyd
+
+# Build / packaging
 build/
 dist/
 wheels/
-*.egg-info
+*.egg-info/
+.eggs/
 
+# ===============================
 # Virtual environments
-.venv
+# ===============================
+.venv/
+venv/
+ENV/
 
+# ===============================
+# Caches & tooling
+# ===============================
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# ===============================
 # Environment variables
+# ===============================
 .env
-.env.test
+.env.*
+!.env.example
+
+# ===============================
+# OS / editor junk
+# ===============================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

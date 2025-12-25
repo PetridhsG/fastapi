@@ -4,6 +4,8 @@ from pydantic import BaseModel
 
 
 class Token(BaseModel):
+    """Schema for authentication token response."""
+
     access_token: str
     token_type: str
 
@@ -11,4 +13,6 @@ class Token(BaseModel):
 
 
 class TokenData(BaseModel):
+    """Schema for data contained in authentication token."""
+
     user_id: Optional[int] = None

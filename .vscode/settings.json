@@ -24,6 +24,18 @@
   "python.testing.pytestArgs": ["tests"],
   "python.envFile": "${workspaceFolder}/.env.test",
 
+  // --- Hide generated folders/files ---
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    "**/*.pyo": true,
+    ".venv": true,
+    "venv": true,
+    ".pytest_cache": true,
+    ".mypy_cache": true
+  },
+
   // --- Misc ---
-  "postman.settings.dotenv-detection-notification-visibility": false
+  "postman.settings.dotenv-detection-notification-visibility": false,
+  "python-envs.pythonProjects": []
 }

@@ -5,12 +5,14 @@ from fastapi import status
 # Login user tests
 # -----------------------------
 
+route = "/api/v1/auth/login"
+
 
 def test_login_success(client, test_users):
     user = test_users[0]
 
     response = client.post(
-        "/api/v1/login",
+        route,
         data={
             "username": user.email,
             "password": "User1Pass!",
@@ -25,7 +27,7 @@ def test_login_success(client, test_users):
 
 def test_login_invalid_email(client):
     response = client.post(
-        "/api/v1/login",
+        route,
         data={"username": "wrong@example.com", "password": "any"},
     )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
@@ -36,7 +38,7 @@ def test_login_invalid_password(client, test_users):
     user = test_users[0]
 
     response = client.post(
-        "/api/v1/login",
+        route,
         data={"username": user.email, "password": "WrongPass!"},
     )
 

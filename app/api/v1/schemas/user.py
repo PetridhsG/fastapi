@@ -1,10 +1,17 @@
-import re
 from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
 
+from app.api.v1.schemas.validators import (
+    validate_bio,
+    validate_password_strength,
+    validate_username,
+)
+
 
 class UserCreate(BaseModel):
+    """Schema for creating a new user."""
+
     email: EmailStr
     username: str
     password: str
@@ -13,39 +20,23 @@ class UserCreate(BaseModel):
 
     @field_validator("username")
     @classmethod
-    def validate_username(cls, v: str) -> str:
-        v = v.strip()
-        if len(v) < 4 or len(v) > 20 or " " in v:
-            raise ValueError("Username must be 4–20 characters and contain no spaces")
-        return v
+    def validate_username(cls, v: str | None) -> str | None:
+        return validate_username(v)
 
     @field_validator("bio")
     @classmethod
     def validate_bio(cls, v: str | None) -> str | None:
-        if v is None:
-            return v
-        v = v.strip()
-        if len(v) > 200:
-            raise ValueError("Bio must be at most 200 characters long")
-        return v
+        return validate_bio(v)
 
     @field_validator("password")
     @classmethod
     def password_strength(cls, v: str) -> str:
-        if (
-            len(v) < 6
-            or not re.search(r"[A-Z]", v)
-            or not re.search(r"[0-9]", v)
-            or not re.search(r"[^\w\s]", v)
-        ):
-            raise ValueError(
-                "Password must be at least 6 characters long and contain "
-                "one uppercase letter, one number, and one special character."
-            )
-        return v
+        return validate_password_strength(v)
 
 
-class UserSearchOut(BaseModel):
+class UserListItemOut(BaseModel):
+    """Schema for user data returned in lists (search results,followers)."""
+
     id: int
     username: str
     is_following: bool
@@ -54,9 +45,81 @@ class UserSearchOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class UserOut(BaseModel):
+class UserCreatedOut(BaseModel):
+    """Schema for user data returned upon successful creation."""
+
     id: int
+    username: str
     email: EmailStr
+    bio: str | None = None
+    is_private: bool
     created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserPublicOut(BaseModel):
+    """Schema for public user data."""
+
+    id: int
+    username: str
+    bio: str | None = None
+    is_private: bool
+    posts_count: int
+    followers_count: int
+    following_count: int
+    is_following: bool | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class UserSettingsOut(BaseModel):
+    """Schema for user settings."""
+
+    id: int
+    username: str
+    email: EmailStr
+    bio: str | None = None
+    created_at: datetime
+    is_private: bool
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserEdit(BaseModel):
+    """Schema for editing user information."""
+
+    username: str | None = None
+    bio: str | None = None
+    is_private: bool | None = None
+
+    @field_validator("username")
+    @classmethod
+    def validate_username(cls, v: str | None) -> str | None:
+        return validate_username(v)
+
+    @field_validator("bio")
+    @classmethod
+    def validate_bio(cls, v: str | None) -> str | None:
+        return validate_bio(v)
+
+
+class UserEditOut(BaseModel):
+    """Schema for user data returned upon successful edit."""
+
+    id: int
+    username: str
+    bio: str | None = None
+    is_private: bool
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserChangePassword(BaseModel):
+    """Schema for changing user password."""
+
+    current_password: str
+    new_password: str
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_new_password(cls, v: str) -> str:
+        return validate_password_strength(v)

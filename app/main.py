@@ -3,6 +3,10 @@ from fastapi.concurrency import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1 import router as api_v1_router
+from app.core.exceptions.handlers import (
+    register_auth_exception_handlers,
+    register_user_exception_handlers,
+)
 from app.core.logger import logger
 
 api_v1_router_prefix = "/api/v1"
@@ -32,6 +36,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# Register global exception handlers
+register_user_exception_handlers(app)
+register_auth_exception_handlers(app)
 
 # Include API routers
 app.include_router(api_v1_router, prefix=api_v1_router_prefix)
