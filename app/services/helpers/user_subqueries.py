@@ -5,8 +5,6 @@ from app.db.models.follow import Follow
 from app.db.models.post import Post
 from app.db.models.user import User
 
-"""Helper class for follow-related subqueries."""
-
 
 class UserSubqueries:
 

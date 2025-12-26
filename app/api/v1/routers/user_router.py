@@ -1,8 +1,9 @@
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 
-from app.api.v1.dependencies import get_current_user, get_user_service
+from app.api.v1.dependencies import get_current_user, get_post_service, get_user_service
+from app.api.v1.schemas.post import PostListItemOut
 from app.api.v1.schemas.user import (
     UserChangePassword,
     UserCreate,
@@ -13,6 +14,7 @@ from app.api.v1.schemas.user import (
     UserPublicOut,
     UserSettingsOut,
 )
+from app.services.post_service import PostService
 from app.services.user_service import UserService
 
 prefix = "/users"
@@ -91,8 +93,8 @@ def get_user_followers(
     username: str,
     current_user=Depends(get_current_user),
     user_service: UserService = Depends(get_user_service),
-    limit: int = 10,
-    offset: int = 0,
+    limit: int = Query(10, ge=1, le=50),
+    offset: int = Query(0, ge=0),
     search: Optional[str] = "",
 ):
     return user_service.get_user_followers(
@@ -109,8 +111,8 @@ def get_user_following(
     username: str,
     current_user=Depends(get_current_user),
     user_service: UserService = Depends(get_user_service),
-    limit: int = 10,
-    offset: int = 0,
+    limit: int = Query(10, ge=1, le=50),
+    offset: int = Query(0, ge=0),
     search: Optional[str] = "",
 ):
     return user_service.get_user_following(
@@ -121,14 +123,21 @@ def get_user_following(
 @router.get(
     "/{username}/posts",
     summary="Get current user's posts",
-    response_model=UserPublicOut,
+    response_model=List[PostListItemOut],
 )
 def get_user_posts(
     username: str,
+    limit: int = Query(10, ge=1, le=50),
+    offset: int = Query(0, ge=0),
     current_user=Depends(get_current_user),
-    user_service: UserService = Depends(get_user_service),
+    post_service: PostService = Depends(get_post_service),
 ):
-    return user_service.get_user_posts(current_user.id, username)
+    return post_service.get_posts_by_username(
+        username=username,
+        current_user_id=current_user.id,
+        limit=limit,
+        offset=offset,
+    )
 
 
 @router.patch(
