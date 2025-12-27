@@ -1,7 +1,7 @@
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from app.core.exceptions.auth import InvalidLoginCredentials
+from app.core.exceptions.auth import AuthInvalidLoginCredentials
 from app.core.security.jwt import create_access_token
 from app.core.security.password import verify_password
 from app.db.models import User
@@ -18,10 +18,10 @@ class AuthService:
         )
 
         if not user:
-            raise InvalidLoginCredentials
+            raise AuthInvalidLoginCredentials
 
         if not verify_password(user_credentials.password, user.hashed_password):
-            raise InvalidLoginCredentials
+            raise AuthInvalidLoginCredentials
 
         access_token = create_access_token(data={"user_id": user.id})
 

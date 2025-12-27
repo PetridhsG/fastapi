@@ -4,10 +4,9 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.api.v1.schemas.post import PostCreate, PostCreatedOut, PostListItemOut
-from app.core.exceptions.user import UserNotAllowed
 from app.db.models.post import Post
 from app.services.helpers.post_subqueries import PostSubqueries
-from app.services.helpers.user_access import UserHelper
+from app.services.helpers.user_queries import UserHelper
 
 
 class PostService:
@@ -27,17 +26,12 @@ class PostService:
 
     def get_posts_by_username(
         self,
-        username: str,
         current_user_id: int,
+        target_user_id: int,
         limit: int,
         offset: int,
     ) -> List[PostListItemOut]:
         """Get posts by username; raises UserNotFound if not found."""
-        target_user = self.user_helper.get_target_user(username)
-
-        # Enforce access rules
-        if not self.user_helper.can_view_user(current_user_id, target_user):
-            raise UserNotAllowed
 
         comments_count_sq = PostSubqueries.comments_count_subq(self.db)
         reactions_count_sq = PostSubqueries.reactions_count_subq(self.db)
@@ -70,7 +64,7 @@ class PostService:
                 user_reaction_sq,
                 user_reaction_sq.c.post_id == Post.id,
             )
-            .filter(Post.owner_id == target_user.id)
+            .filter(Post.owner_id == target_user_id)
             .order_by(Post.created_at.desc())
             .limit(limit)
             .offset(offset)

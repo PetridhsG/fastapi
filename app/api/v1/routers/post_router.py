@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, status
 
-from app.api.v1.dependencies import get_current_user, get_post_service
+from app.api.v1.dependencies import get_post_service
 from app.api.v1.schemas.post import PostCreate, PostCreatedOut
+from app.core.security.access_controls import get_current_user
 from app.services.post_service import PostService
 
 prefix = "/posts"

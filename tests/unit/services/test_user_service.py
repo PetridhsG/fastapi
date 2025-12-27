@@ -2,7 +2,6 @@ import pytest
 
 from app.api.v1.schemas.user import UserCreate
 from app.core.exceptions.user import (
-    UserAlreadyExists,
     UserEmailAlreadyExists,
     UsernameAlreadyExists,
 )
@@ -80,7 +79,7 @@ def test_create_user_duplicate_email_and_username(
         password="Pass123!",
     )
 
-    with pytest.raises(UserAlreadyExists):
+    with pytest.raises(UserEmailAlreadyExists):
         user_service.create_user(user_data)
 
 

@@ -3,7 +3,14 @@ from sqlalchemy.orm import Session
 
 from app.api.v1.schemas.user import UserCreate
 from app.services.auth_service import AuthService
+from app.services.post_service import PostService
 from app.services.user_service import UserService
+
+
+@pytest.fixture
+def auth_service(session: Session) -> AuthService:
+    """Provides an AuthService instance with a fresh test session."""
+    return AuthService(session)
 
 
 @pytest.fixture
@@ -13,9 +20,9 @@ def user_service(session: Session) -> UserService:
 
 
 @pytest.fixture
-def auth_service(session: Session) -> AuthService:
-    """Provides an AuthService instance with a fresh test session."""
-    return AuthService(session)
+def post_service(session: Session) -> PostService:
+    """Provides a PostService instance with a fresh test session."""
+    return PostService(session)
 
 
 @pytest.fixture

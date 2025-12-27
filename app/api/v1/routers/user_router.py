@@ -2,7 +2,10 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Query, status
 
-from app.api.v1.dependencies import get_current_user, get_post_service, get_user_service
+from app.api.v1.dependencies import (
+    get_post_service,
+    get_user_service,
+)
 from app.api.v1.schemas.post import PostListItemOut
 from app.api.v1.schemas.user import (
     UserChangePassword,
@@ -14,6 +17,7 @@ from app.api.v1.schemas.user import (
     UserPublicOut,
     UserSettingsOut,
 )
+from app.core.security.access_controls import can_view_target_user, get_current_user
 from app.services.post_service import PostService
 from app.services.user_service import UserService
 
@@ -58,88 +62,6 @@ def get_current_user_settings(
     return user_service.get_current_user_settings(current_user.id)
 
 
-@router.get(
-    "",
-    summary="Search users by username",
-    response_model=List[UserListItemOut],
-)
-def search_users(
-    query: str,
-    current_user=Depends(get_current_user),
-    user_service: UserService = Depends(get_user_service),
-):
-    return user_service.search_users(current_user.id, query)
-
-
-@router.get(
-    "/{username}",
-    summary="Get public user information by username",
-    response_model=UserPublicOut,
-)
-def get_user_by_username(
-    username: str,
-    current_user=Depends(get_current_user),
-    user_service: UserService = Depends(get_user_service),
-):
-    return user_service.get_user_by_username(current_user.id, username)
-
-
-@router.get(
-    "/{username}/followers",
-    summary="Get a list of followers for a user",
-    response_model=List[UserListItemOut],
-)
-def get_user_followers(
-    username: str,
-    current_user=Depends(get_current_user),
-    user_service: UserService = Depends(get_user_service),
-    limit: int = Query(10, ge=1, le=50),
-    offset: int = Query(0, ge=0),
-    search: Optional[str] = "",
-):
-    return user_service.get_user_followers(
-        current_user.id, username, limit=limit, offset=offset, search=search
-    )
-
-
-@router.get(
-    "/{username}/following",
-    summary="Get a list of following for a user",
-    response_model=List[UserListItemOut],
-)
-def get_user_following(
-    username: str,
-    current_user=Depends(get_current_user),
-    user_service: UserService = Depends(get_user_service),
-    limit: int = Query(10, ge=1, le=50),
-    offset: int = Query(0, ge=0),
-    search: Optional[str] = "",
-):
-    return user_service.get_user_following(
-        current_user.id, username, limit=limit, offset=offset, search=search
-    )
-
-
-@router.get(
-    "/{username}/posts",
-    summary="Get current user's posts",
-    response_model=List[PostListItemOut],
-)
-def get_user_posts(
-    username: str,
-    limit: int = Query(10, ge=1, le=50),
-    offset: int = Query(0, ge=0),
-    current_user=Depends(get_current_user),
-    post_service: PostService = Depends(get_post_service),
-):
-    return post_service.get_posts_by_username(
-        username=username,
-        current_user_id=current_user.id,
-        limit=limit,
-        offset=offset,
-    )
-
-
 @router.patch(
     "/me",
     summary="Edit current user's information",
@@ -176,3 +98,93 @@ def delete_current_user(
     user_service: UserService = Depends(get_user_service),
 ):
     user_service.delete_user(current_user.id)
+
+
+@router.get(
+    "",
+    summary="Search users by username",
+    response_model=List[UserListItemOut],
+)
+def search_users(
+    query: str,
+    current_user=Depends(get_current_user),
+    user_service: UserService = Depends(get_user_service),
+):
+    return user_service.search_users(current_user.id, query)
+
+
+@router.get(
+    "/{username}",
+    summary="Get public user information by username",
+    response_model=UserPublicOut,
+)
+def get_user_by_username(
+    username: str,
+    current_user=Depends(get_current_user),
+    user_service: UserService = Depends(get_user_service),
+):
+    return user_service.get_user_by_username(current_user.id, username)
+
+
+@router.get(
+    "/{username}/followers",
+    summary="Get a list of followers for a user",
+    response_model=List[UserListItemOut],
+)
+def get_user_followers(
+    target_user=Depends(can_view_target_user),
+    current_user=Depends(get_current_user),
+    user_service: UserService = Depends(get_user_service),
+    limit: int = Query(10, ge=1, le=50),
+    offset: int = Query(0, ge=0),
+    search: Optional[str] = "",
+):
+    return user_service.get_user_followers(
+        current_user.id,
+        target_user.id,
+        limit=limit,
+        offset=offset,
+        search=search,
+    )
+
+
+@router.get(
+    "/{username}/following",
+    summary="Get a list of following for a user",
+    response_model=List[UserListItemOut],
+)
+def get_user_following(
+    target_user=Depends(can_view_target_user),
+    current_user=Depends(get_current_user),
+    user_service: UserService = Depends(get_user_service),
+    limit: int = Query(10, ge=1, le=50),
+    offset: int = Query(0, ge=0),
+    search: Optional[str] = "",
+):
+    return user_service.get_user_following(
+        current_user.id,
+        target_user.id,
+        limit=limit,
+        offset=offset,
+        search=search,
+    )
+
+
+@router.get(
+    "/{username}/posts",
+    summary="Get a list of posts for a user",
+    response_model=List[PostListItemOut],
+)
+def get_user_posts(
+    target_user=Depends(can_view_target_user),
+    current_user=Depends(get_current_user),
+    limit: int = Query(10, ge=1, le=50),
+    offset: int = Query(0, ge=0),
+    post_service: PostService = Depends(get_post_service),
+):
+    return post_service.get_posts_by_username(
+        current_user.id,
+        target_user.id,
+        limit=limit,
+        offset=offset,
+    )

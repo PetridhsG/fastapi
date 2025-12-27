@@ -1,5 +1,6 @@
 ├── .dockerignore
 ├── .env
+├── .env.example
 ├── .env.test
 ├── .github
 │   └── workflows
@@ -16,6 +17,7 @@
 ├── .python-version
 ├── .vscode
 │   ├── counter.json
+│   ├── launch.json
 │   └── settings.json
 ├── Dockerfile
 ├── README.md
@@ -24,7 +26,9 @@
 │   ├── env.py
 │   ├── script.py.mako
 │   └── versions
-│       └── 5f8864182ef9_initial_create_tables.py
+│       ├── 1938e42478d6_remove_visibility_from_posts.py
+│       ├── 5f8864182ef9_initial_create_tables.py
+│       └── c8aa27d49077_add_username_bio_and_privacy_to_users.py
 ├── alembic.ini
 ├── app
 │   ├── __init__.py
@@ -44,7 +48,12 @@
 │   │       └── schemas
 │   │           ├── __init__.py
 │   │           ├── auth.py
-│   │           └── user.py
+│   │           ├── comment.py
+│   │           ├── follow.py
+│   │           ├── post.py
+│   │           ├── reaction.py
+│   │           ├── user.py
+│   │           └── validators.py
 │   ├── core
 │   │   ├── __init__.py
 │   │   ├── config.py
@@ -52,10 +61,16 @@
 │   │   ├── exceptions
 │   │   │   ├── __init__.py
 │   │   │   ├── auth.py
+│   │   │   ├── comment.py
+│   │   │   ├── exception_handler.py
+│   │   │   ├── follow.py
+│   │   │   ├── post.py
+│   │   │   ├── reaction.py
 │   │   │   └── user.py
 │   │   ├── logger.py
 │   │   └── security
 │   │       ├── __init__.py
+│   │       ├── access_controls.py
 │   │       ├── jwt.py
 │   │       └── password.py
 │   ├── db
@@ -74,6 +89,11 @@
 │   │   ├── auth_service.py
 │   │   ├── comment_service.py
 │   │   ├── follow_service.py
+│   │   ├── helpers
+│   │   │   ├── __init__.py
+│   │   │   ├── post_subqueries.py
+│   │   │   ├── user_queries.py
+│   │   │   └── user_subqueries.py
 │   │   ├── post_service.py
 │   │   ├── reaction_service.py
 │   │   └── user_service.py
@@ -113,6 +133,8 @@
 │   │   └── db
 │   └── unit
 │       ├── __init__.py
+│       ├── schemas
+│       │   └── test_user_schema.py
 │       ├── services
 │       │   ├── __init__.py
 │       │   ├── test_auth_service.py

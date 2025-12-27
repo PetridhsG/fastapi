@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from app.core.exceptions.auth import InvalidLoginCredentials
+from app.core.exceptions.auth import AuthInvalidLoginCredentials
 from app.services.auth_service import AuthService
 
 # -----------------------------
@@ -28,7 +28,7 @@ def test_login_user_email_does_not_exist(auth_service: AuthService):
     credentials.username = "somerandom@email.com"
     credentials.password = "@Dwd@SD2dsa21"
 
-    with pytest.raises(InvalidLoginCredentials):
+    with pytest.raises(AuthInvalidLoginCredentials):
         auth_service.login_user(credentials)
 
 
@@ -39,5 +39,5 @@ def test_login_user_incorrect_password(auth_service: AuthService, test_users):
     credentials.username = user.email
     credentials.password = "WrongPassword123!"
 
-    with pytest.raises(InvalidLoginCredentials):
+    with pytest.raises(AuthInvalidLoginCredentials):
         auth_service.login_user(credentials)

@@ -14,18 +14,16 @@ from app.api.v1.schemas.user import (
     UserSettingsOut,
 )
 from app.core.exceptions.user import (
-    InvalidPassword,
-    PasswordUnchanged,
-    UserAlreadyExists,
     UserEmailAlreadyExists,
+    UserInvalidPassword,
     UsernameAlreadyExists,
-    UserNotAllowed,
     UserNotFound,
+    UserPasswordUnchanged,
 )
 from app.core.security.password import hash_password, verify_password
 from app.db.models import User
 from app.db.models.follow import Follow
-from app.services.helpers.user_access import UserHelper
+from app.services.helpers.user_queries import UserHelper
 from app.services.helpers.user_subqueries import UserSubqueries
 
 
@@ -35,7 +33,7 @@ class UserService:
         self.user_helper = UserHelper(db)
 
     def create_user(self, user_create: UserCreate) -> UserCreatedOut:
-        """Create a new user and hash password; raises UserAlreadyExists on duplicate email."""
+        """Create a new user and hash password; raises UserEmailAlreadyExists on duplicate email."""
         if self.db.query(User).filter(User.email == user_create.email).first():
             raise UserEmailAlreadyExists
 
@@ -56,12 +54,11 @@ class UserService:
         except IntegrityError:
             # Safety net for race conditions
             self.db.rollback()
-            raise UserAlreadyExists
 
         return new_user
 
     def get_current_user(self, user_id: int) -> UserPublicOut:
-        """Get current user; raises UserNotFound if not found."""
+        """Get current user."""
         user = self.user_helper.get_user_by_id(user_id)
         return self._get_public_user(current_user_id=user_id, username=user.username)
 
@@ -75,7 +72,7 @@ class UserService:
         """Search users by username."""
         q = query.strip().lower()
 
-        users = (
+        return (
             self.db.query(
                 User.id,
                 User.username,
@@ -97,18 +94,16 @@ class UserService:
             .all()
         )
 
-        return [user for user in users]
-
     def get_user_by_username(
         self, current_user_id: int, username: str
-    ) -> UserPublicOut | None:
-        """Get user information by username; raises UserNotFound if not found."""
-        return self._get_public_user(current_user_id, username)
+    ) -> UserPublicOut:
+        """Get user by username; raises UserNotFound if not found."""
+        return self._get_public_user(current_user_id=current_user_id, username=username)
 
     def get_user_followers(
         self,
         current_user_id: int,
-        target_username: str,
+        target_user_id: int,
         limit: int = 10,
         offset: int = 0,
         search: Optional[str] = "",
@@ -116,13 +111,7 @@ class UserService:
         """Get followers of a user; raises UserNotFound if not found."""
         q = (search or "").strip().lower()
 
-        target_user = self.user_helper.get_target_user(target_username)
-
-        # Enforce access rules
-        if not self.user_helper.can_view_user(current_user_id, target_user):
-            raise UserNotAllowed
-
-        rows = (
+        return (
             self.db.query(
                 User.id,
                 User.username,
@@ -133,7 +122,7 @@ class UserService:
             )
             .select_from(User)
             .join(Follow, User.id == Follow.follower_id)
-            .filter(Follow.followee_id == target_user.id, Follow.accepted.is_(True))
+            .filter(Follow.followee_id == target_user_id, Follow.accepted.is_(True))
             .filter(User.username.ilike(f"%{q}%"))
             .order_by(
                 case(
@@ -148,26 +137,18 @@ class UserService:
             .all()
         )
 
-        return [row for row in rows]
-
     def get_user_following(
         self,
         current_user_id: int,
-        target_username: str,
+        target_user_id: int,
         limit: int = 10,
         offset: int = 0,
         search: Optional[str] = "",
     ) -> List[UserListItemOut]:
-        """Get following of a user; raises UserNotFound if not found."""
+        """Get following of a user; assumes access already checked."""
         q = (search or "").strip().lower()
 
-        target_user = self.user_helper.get_target_user(target_username)
-
-        # Enforce access rules
-        if not self.user_helper.can_view_user(current_user_id, target_user):
-            raise UserNotAllowed
-
-        rows = (
+        return (
             self.db.query(
                 User.id,
                 User.username,
@@ -178,7 +159,7 @@ class UserService:
             )
             .select_from(User)
             .join(Follow, User.id == Follow.followee_id)
-            .filter(Follow.follower_id == target_user.id, Follow.accepted.is_(True))
+            .filter(Follow.follower_id == target_user_id, Follow.accepted.is_(True))
             .filter(User.username.ilike(f"%{q}%"))
             .order_by(
                 case(
@@ -192,8 +173,6 @@ class UserService:
             .offset(offset)
             .all()
         )
-
-        return [row for row in rows]
 
     def update_user(self, user_id: int, data: UserEdit) -> User:
         """Update user information; raises UserNotFound or UsernameAlreadyExists."""
@@ -221,11 +200,11 @@ class UserService:
 
         # Verify current password
         if not verify_password(data.current_password, user.hashed_password):
-            raise InvalidPassword
+            raise UserInvalidPassword
 
         # Prevent reusing the same password
         if verify_password(data.new_password, user.hashed_password):
-            raise PasswordUnchanged
+            raise UserPasswordUnchanged
 
         # Hash and update new password
         user.hashed_password = hash_password(data.new_password)
@@ -242,9 +221,11 @@ class UserService:
         self.db.commit()
 
     def _get_public_user(
-        self, current_user_id: int, username: str
-    ) -> UserPublicOut | None:
-        """Get public user information by username; raises UserNotFound if not found."""
+        self,
+        current_user_id: int,
+        username: str,
+    ) -> UserPublicOut:
+        """Get public user info by user_id or username."""
         user = (
             self.db.query(
                 User.id,
@@ -265,7 +246,7 @@ class UserService:
         if not user:
             raise UserNotFound
 
-        # If the user is viewing their own profile, set is_following to None
+        # Hide is_following for current user
         user_dict = dict(user._mapping)
         if user_dict["id"] == current_user_id:
             user_dict["is_following"] = None
