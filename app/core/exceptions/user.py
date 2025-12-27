@@ -1,18 +1,13 @@
 from fastapi import status
 
+from app.core.exceptions.base_exception import AppBaseException
 
-class UserBaseException(Exception):
+
+class UserBaseException(AppBaseException):
     """Base class for all user-related exceptions."""
 
-    status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR
     error: str = "user_error"
     message: str = "An unknown user error occurred."
-    field: str = None  # Optional, for field-specific errors
-
-    def __init__(self, message: str = None):
-        if message:
-            self.message = message
-        super().__init__(self.message)
 
 
 class UserEmailAlreadyExists(UserBaseException):

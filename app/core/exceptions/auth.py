@@ -1,24 +1,20 @@
 from fastapi import status
 
+from app.core.exceptions.base_exception import AppBaseException
 
-class AuthBaseException(Exception):
+
+class AuthBaseException(AppBaseException):
     """Base class for all auth-related exceptions."""
 
-    status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR
     error: str = "auth_error"
     message: str = "An authentication error occurred."
-
-    def __init__(self, message: str = None):
-        if message:
-            self.message = message
-        super().__init__(self.message)
 
 
 class AuthInvalidLoginCredentials(AuthBaseException):
     """Raised when the provided login credentials are invalid."""
 
     status_code = status.HTTP_401_UNAUTHORIZED
-    error = "invalid_login"
+    error = "invalid_login_credentials"
     message = "Invalid login credentials."
 
 

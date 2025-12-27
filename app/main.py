@@ -1,13 +1,10 @@
-import logging
-
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.concurrency import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.api.v1 import router as api_v1_router
-from app.core.exceptions.auth import AuthBaseException
-from app.core.exceptions.exception_handler import register_exception_handler
-from app.core.exceptions.user import UserBaseException
+from app.core.exceptions.base_exception import AppBaseException
 from app.core.logger import logger
 
 api_v1_router_prefix = "/api/v1"
@@ -38,9 +35,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # Register global exception handlers
-register_exception_handler(app, UserBaseException, default_error="user_error")
-register_exception_handler(app, AuthBaseException, default_error="auth_error")
+@app.exception_handler(AppBaseException)
+async def app_base_exception_handler(request: Request, exc: AppBaseException):
+    content = {
+        "detail": {
+            "error": exc.error,
+            "message": exc.message,
+        }
+    }
+    if exc.field:
+        content["field"] = exc.field
+    return JSONResponse(status_code=exc.status_code, content=content)
 
 
 # Include API routers
@@ -49,7 +56,6 @@ app.include_router(api_v1_router, prefix=api_v1_router_prefix)
 
 @app.get("/")
 def root():
-    logger = logging.getLogger(__name__)
     logger.info("Root endpoint accessed")
     return {"message": "Root Endpoint - FastAPI Application"}
 
