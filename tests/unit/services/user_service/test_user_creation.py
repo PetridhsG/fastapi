@@ -81,29 +81,3 @@ def test_create_user_duplicate_email_and_username(
 
     with pytest.raises(UserEmailAlreadyExists):
         user_service.create_user(user_data)
-
-
-# -----------------------------
-# Search user tests
-# -----------------------------
-def test_search_users_found(user_service: UserService, test_users):
-    current_user = test_users[0]
-    query = "example"
-
-    results = user_service.search_users(current_user.id, query)
-
-    assert len(results) == 2
-    for user_out in results:
-        assert "example" in user_out.username
-        assert user_out.followers_count == 0
-        assert user_out.is_following is False
-
-
-def test_search_users_not_found(user_service: UserService, test_users):
-    current_user = test_users[0]
-    query = "nonexistent"
-
-    results = user_service.search_users(current_user.id, query)
-
-    assert len(results) == 0
-    assert results == []

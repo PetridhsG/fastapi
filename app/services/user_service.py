@@ -48,12 +48,8 @@ class UserService:
         new_user = User(**user_data)
         self.db.add(new_user)
 
-        try:
-            self.db.commit()
-            self.db.refresh(new_user)
-        except IntegrityError:
-            # Safety net for race conditions
-            self.db.rollback()
+        self.db.commit()
+        self.db.refresh(new_user)
 
         return new_user
 
@@ -212,11 +208,8 @@ class UserService:
         self.db.refresh(user)
 
     def delete_user(self, user_id: int) -> None:
-        """Delete user; raises UserNotFound."""
-        user = self.db.get(User, user_id)
-        if not user:
-            raise UserNotFound
-
+        """Delete user"""
+        user = self.user_helper.get_user_by_id(user_id)
         self.db.delete(user)
         self.db.commit()
 

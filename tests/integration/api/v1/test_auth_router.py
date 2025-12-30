@@ -1,11 +1,11 @@
 import pytest  # noqa: F401
 from fastapi import status
 
+route = "/api/v1/auth/login"
+
 # -----------------------------
 # Login user tests
 # -----------------------------
-
-route = "/api/v1/auth/login"
 
 
 def test_login_success(client, test_users):

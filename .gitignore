@@ -6,7 +6,9 @@ __pycache__/
 *.pyo
 *.pyd
 
+# ===============================
 # Build / packaging
+# ===============================
 build/
 dist/
 wheels/
@@ -33,12 +35,11 @@ htmlcov/
 # ===============================
 .env
 .env.*
-!.env.example
 
 # ===============================
 # OS / editor junk
 # ===============================
 .DS_Store
 Thumbs.db
-.vscode/
 .idea/
+.VSCodeCounter/
