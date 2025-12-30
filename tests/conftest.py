@@ -52,3 +52,32 @@ def client(session):
 
     app.dependency_overrides[get_db] = override_get_db
     yield TestClient(app)
+
+
+# @pytest.fixture(scope="function")
+# def client(session):
+#     def override_get_db():
+#         yield session
+
+#     app.dependency_overrides[get_db] = override_get_db
+#     yield TestClient(app)
+#     app.dependency_overrides.clear()
+
+
+@pytest.fixture(scope="function")
+def authorized_client(client, test_users):
+    """
+    TestClient with a logged-in user
+    """
+
+    response = client.post(
+        "/api/v1/auth/login",
+        data={
+            "username": test_users[0].email,
+            "password": "User1Pass!",
+        },
+    )
+
+    token = response.json()["access_token"]
+    client.headers.update({"Authorization": f"Bearer {token}"})
+    return client

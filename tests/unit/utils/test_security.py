@@ -78,10 +78,6 @@ def test_hash_and_verify_password():
 
 
 # -----------------------------
-# Access control Tests
-# -----------------------------
-
-# -----------------------------
 # Get curent user Tests
 # -----------------------------
 

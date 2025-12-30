@@ -1,7 +1,6 @@
 from typing import List, Optional
 
 from sqlalchemy import case, func
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.api.v1.schemas.user import (
