@@ -23,7 +23,7 @@ def get_post_service(db: Session = Depends(get_db)) -> PostService:
 
 
 def get_comment_service(db: Session = Depends(get_db)) -> CommentService:
-    return ReactionService(db)
+    return CommentService(db)
 
 
 def get_reaction_service(db: Session = Depends(get_db)) -> ReactionService:
@@ -31,4 +31,4 @@ def get_reaction_service(db: Session = Depends(get_db)) -> ReactionService:
 
 
 def get_follow_service(db: Session = Depends(get_db)) -> FollowService:
-    return ReactionService(db)
+    return FollowService(db)

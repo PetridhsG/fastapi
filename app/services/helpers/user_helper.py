@@ -13,12 +13,12 @@ class UserHelper:
         """Internal helper to fetch user by ID."""
         user = self.db.get(User, user_id)
         if not user:
-            raise UserNotFound
+            raise UserNotFound()
         return user
 
     def get_target_user(self, username: str) -> User:
         """Fetch a user by username; raises UserNotFound if missing."""
         user = self.db.query(User).filter(User.username == username).first()
         if not user:
-            raise UserNotFound
+            raise UserNotFound()
         return user

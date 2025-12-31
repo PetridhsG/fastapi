@@ -24,3 +24,11 @@ class AuthInvalidJWT(AuthBaseException):
     status_code = status.HTTP_401_UNAUTHORIZED
     error = "invalid_jwt"
     message = "JWT is invalid or cannot be validated."
+
+
+class AuthUserCannotBeAuthenticated(AuthBaseException):
+    """Raised when the user cannot be authenticated from the provided token."""
+
+    status_code = status.HTTP_400_BAD_REQUEST
+    error = "user_cannot_be_authenticated"
+    message = "The user is not authenticated or cannot be found in the database."

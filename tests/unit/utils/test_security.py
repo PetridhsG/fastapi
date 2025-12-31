@@ -6,7 +6,7 @@ from jose import jwt
 from pytest_mock import mocker  # noqa: F401
 
 from app.api.v1.schemas.auth import TokenData
-from app.core.exceptions.auth import AuthInvalidJWT
+from app.core.exceptions.auth import AuthInvalidJWT, AuthUserCannotBeAuthenticated
 from app.core.exceptions.user import UserNotAllowedToViewResource, UserNotFound
 from app.core.security.access_controls import can_view_target_user, get_current_user
 from app.core.security.jwt import (
@@ -110,7 +110,7 @@ def test_get_current_user_not_found(mocker):  # noqa: F811
     db = Mock()
     db.get.return_value = None
 
-    with pytest.raises(UserNotFound):
+    with pytest.raises(AuthUserCannotBeAuthenticated):
         get_current_user(token="fake", db=db)
 
 

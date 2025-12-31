@@ -18,10 +18,10 @@ class AuthService:
         )
 
         if not user:
-            raise AuthInvalidLoginCredentials
+            raise AuthInvalidLoginCredentials()
 
         if not verify_password(user_credentials.password, user.hashed_password):
-            raise AuthInvalidLoginCredentials
+            raise AuthInvalidLoginCredentials()
 
         access_token = create_access_token(data={"user_id": user.id})
 

@@ -1,6 +1,6 @@
 import os
 
-EXCLUDE_DIRS = {"__pycache__", ".venv", ".git"}
+EXCLUDE_DIRS = {"__pycache__", ".venv", ".git", "htmlcov", ".VSCodeCounter"}
 EXCLUDE_EXTS = {".pyc", ".pyo"}
 
 

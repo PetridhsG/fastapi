@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session
 
 from app.api.v1.schemas.post import PostCreate, PostCreatedOut, PostListItemOut
 from app.db.models.post import Post
-from app.services.helpers.post_subqueries import PostSubqueries
-from app.services.helpers.user_queries import UserHelper
+from app.services.helpers.subqueries.post_subqueries import PostSubqueries
+from app.services.helpers.user_helper import UserHelper
 
 
 class PostService:
@@ -20,7 +20,7 @@ class PostService:
         """Create a new post and return it."""
         new_post = Post(**post_create.model_dump(), owner_id=current_user_id)
         self.db.add(new_post)
-        self.db.commit()
+        self.db.flush()
         self.db.refresh(new_post)
         return new_post
 

@@ -4,7 +4,7 @@ from unittest.mock import Mock
 import pytest
 
 from app.core.exceptions.user import UserNotFound
-from app.services.helpers.user_queries import UserHelper
+from app.services.helpers.user_helper import UserHelper
 
 # -----------------------------
 # Get user by id tests

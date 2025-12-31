@@ -22,8 +22,8 @@ from app.core.exceptions.user import (
 from app.core.security.password import hash_password, verify_password
 from app.db.models import User
 from app.db.models.follow import Follow
-from app.services.helpers.user_queries import UserHelper
-from app.services.helpers.user_subqueries import UserSubqueries
+from app.services.helpers.subqueries.user_subqueries import UserSubqueries
+from app.services.helpers.user_helper import UserHelper
 
 
 class UserService:
@@ -34,10 +34,10 @@ class UserService:
     def create_user(self, user_create: UserCreate) -> UserCreatedOut:
         """Create a new user and hash password; raises UserEmailAlreadyExists on duplicate email."""
         if self.db.query(User).filter(User.email == user_create.email).first():
-            raise UserEmailAlreadyExists
+            raise UserEmailAlreadyExists()
 
         if self.db.query(User).filter(User.username == user_create.username).first():
-            raise UsernameAlreadyExists
+            raise UsernameAlreadyExists()
 
         hashed_password = hash_password(user_create.password)
         user_data = user_create.model_dump()
@@ -47,7 +47,7 @@ class UserService:
         new_user = User(**user_data)
         self.db.add(new_user)
 
-        self.db.commit()
+        self.db.flush()
         self.db.refresh(new_user)
 
         return new_user
@@ -176,7 +176,7 @@ class UserService:
 
         if data.username and data.username != user.username:
             if self.db.query(User).filter(User.username == data.username).first():
-                raise UsernameAlreadyExists
+                raise UsernameAlreadyExists()
             user.username = data.username
 
         if data.bio is not None:
@@ -185,32 +185,27 @@ class UserService:
         if data.is_private is not None:
             user.is_private = data.is_private
 
-        self.db.commit()
-        self.db.refresh(user)
+        self.db.flush()
         return user
 
     def change_password(self, user_id: int, data: UserChangePassword) -> None:
         """Change user's password; raises UserNotFound or InvalidPassword."""
         user = self.user_helper.get_user_by_id(user_id)
 
-        # Verify current password
         if not verify_password(data.current_password, user.hashed_password):
-            raise UserInvalidPassword
+            raise UserInvalidPassword()
 
-        # Prevent reusing the same password
         if verify_password(data.new_password, user.hashed_password):
-            raise UserPasswordUnchanged
+            raise UserPasswordUnchanged()
 
-        # Hash and update new password
         user.hashed_password = hash_password(data.new_password)
-        self.db.commit()
-        self.db.refresh(user)
+        self.db.flush()
 
     def delete_user(self, user_id: int) -> None:
         """Delete user"""
         user = self.user_helper.get_user_by_id(user_id)
         self.db.delete(user)
-        self.db.commit()
+        self.db.flush()
 
     def _get_public_user(
         self,
@@ -236,7 +231,7 @@ class UserService:
         )
 
         if not user:
-            raise UserNotFound
+            raise UserNotFound()
 
         # Hide is_following for current user
         user_dict = dict(user._mapping)

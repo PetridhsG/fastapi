@@ -1,3 +1,4 @@
+├── .coverage
 ├── .dockerignore
 ├── .env
 ├── .env.example
@@ -61,8 +62,8 @@
 │   │   ├── exceptions
 │   │   │   ├── __init__.py
 │   │   │   ├── auth.py
+│   │   │   ├── base_exception.py
 │   │   │   ├── comment.py
-│   │   │   ├── exception_handler.py
 │   │   │   ├── follow.py
 │   │   │   ├── post.py
 │   │   │   ├── reaction.py
@@ -108,6 +109,7 @@
 │   ├── enter-testdb.sh
 │   ├── run-app.sh
 │   ├── stop-app.sh
+│   ├── test-cov.sh
 │   └── upgrade-db.sh
 ├── structure.txt
 ├── tests
@@ -125,11 +127,11 @@
 │   │   │   └── v1
 │   │   │       ├── __init__.py
 │   │   │       ├── test_auth_router.py
-│   │   │       ├── test_comments_router.py
-│   │   │       ├── test_follows_router.py
-│   │   │       ├── test_posts_router.py
-│   │   │       ├── test_reactions_router.py
-│   │   │       └── test_users_router.py
+│   │   │       ├── test_comment_router.py
+│   │   │       ├── test_follow_router.py
+│   │   │       ├── test_post_router.py
+│   │   │       ├── test_reaction_router.py
+│   │   │       └── test_user_router.py
 │   │   └── db
 │   └── unit
 │       ├── __init__.py
@@ -137,12 +139,30 @@
 │       │   └── test_user_schema.py
 │       ├── services
 │       │   ├── __init__.py
-│       │   ├── test_auth_service.py
-│       │   ├── test_comment_service.py
-│       │   ├── test_follow_service.py
-│       │   ├── test_post_service.py
-│       │   ├── test_reaction_service.py
-│       │   └── test_user_service.py
+│       │   ├── auth_service
+│       │   │   ├── __init__.py
+│       │   │   └── test_auth_service.py
+│       │   ├── comment_service
+│       │   │   ├── __init__.py
+│       │   │   └── test_comment_service.py
+│       │   ├── follow_service
+│       │   │   ├── __init__.py
+│       │   │   └── test_follow_service.py
+│       │   ├── post_service
+│       │   │   ├── __init__.py
+│       │   │   └── test_post_service.py
+│       │   ├── reaction_service
+│       │   │   ├── __init__.py
+│       │   │   └── test_reaction_service.py
+│       │   ├── test_helpers
+│       │   │   ├── __init__.py
+│       │   │   └── test_user_queries_helper.py
+│       │   └── user_service
+│       │       ├── __init__.py
+│       │       ├── test_get_follows.py
+│       │       ├── test_get_user.py
+│       │       ├── test_update_user.py
+│       │       └── test_user_creation.py
 │       └── utils
 │           ├── __init__.py
 │           └── test_security.py

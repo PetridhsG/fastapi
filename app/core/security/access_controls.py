@@ -2,6 +2,7 @@ from fastapi import Depends, Path
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
+from app.core.exceptions.auth import AuthUserCannotBeAuthenticated
 from app.core.exceptions.user import UserNotAllowedToViewResource, UserNotFound
 from app.core.security.jwt import verify_access_token
 from app.db.database import get_db
@@ -19,7 +20,7 @@ def get_current_user(
     token_data = verify_access_token(token)
     user = db.get(User, token_data.user_id)
     if not user:
-        raise UserNotFound
+        raise AuthUserCannotBeAuthenticated()
     return user
 
 
@@ -36,7 +37,7 @@ def can_view_target_user(
     # Get target user
     target_user = db.query(User).filter(User.username == username).first()
     if not target_user:
-        raise UserNotFound
+        raise UserNotFound()
 
     # Check visibility
     if not target_user.is_private:
@@ -55,6 +56,6 @@ def can_view_target_user(
         .first()
     )
     if not follow_exists:
-        raise UserNotAllowedToViewResource
+        raise UserNotAllowedToViewResource()
 
     return target_user

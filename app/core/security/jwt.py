@@ -24,7 +24,7 @@ def verify_access_token(token: str) -> TokenData:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("user_id")
         if not user_id:
-            raise AuthInvalidJWT
+            raise AuthInvalidJWT()
         return TokenData(user_id=user_id)
     except JWTError:
-        raise AuthInvalidJWT
+        raise AuthInvalidJWT()
