@@ -170,7 +170,7 @@ def test_reject_follow_success(follow_service: FollowService, test_users_with_fo
     current_user = test_users_with_follow["user1"]
     follower_user = test_users_with_follow["user5"]  # This user sent the follow request
 
-    follow_service.reject_follow_request(
+    follow_service.remove_pending_request(
         follower_id=follower_user.id, followee_id=current_user.id
     )
 
@@ -187,7 +187,7 @@ def test_reject_follow_already_accepted(
     follower_user = test_users_with_follow["user1"]
 
     with pytest.raises(FollowAlreadyAccepted):
-        follow_service.reject_follow_request(
+        follow_service.remove_pending_request(
             follower_id=follower_user.id, followee_id=current_user.id
         )
 

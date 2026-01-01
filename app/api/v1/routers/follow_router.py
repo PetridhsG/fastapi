@@ -25,8 +25,8 @@ def follow_user(
 
 
 @router.delete(
-    "/{user_id}/follow",
-    summary="Unfollow a user or remove follow request",
+    "/{user_id}/unfollow",
+    summary="Unfollow a user",
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def unfollow_user(
@@ -48,6 +48,51 @@ def remove_follower(
     follow_service: FollowService = Depends(get_follow_service),
 ):
     follow_service.unfollow_user(follower_id=user_id, followee_id=current_user.id)
+
+
+@router.patch(
+    "/requests/{user_id}/accept",
+    summary="Accept a follow request",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def accept_follow_request(
+    user_id: int,
+    current_user=Depends(get_current_user),
+    follow_service: FollowService = Depends(get_follow_service),
+):
+    follow_service.accept_follow_request(
+        follower_id=user_id, followee_id=current_user.id
+    )
+
+
+@router.delete(
+    "/requests/{user_id}/cancel",
+    summary="Cancel a pending follow request",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def cancel_follow_request(
+    user_id: int,
+    current_user=Depends(get_current_user),
+    follow_service: FollowService = Depends(get_follow_service),
+):
+    follow_service.remove_pending_request(
+        follower_id=user_id, followee_id=current_user.id
+    )
+
+
+@router.delete(
+    "/requests/{user_id}/reject",
+    summary="Reject a follow request",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def reject_follow_request(
+    user_id: int,
+    current_user=Depends(get_current_user),
+    follow_service: FollowService = Depends(get_follow_service),
+):
+    follow_service.remove_pending_request(
+        follower_id=user_id, followee_id=current_user.id
+    )
 
 
 @router.get(
@@ -72,33 +117,3 @@ def get_outgoing_follow_requests(
     follow_service: FollowService = Depends(get_follow_service),
 ):
     return follow_service.get_follow_requests(user_id=current_user.id, incoming=False)
-
-
-@router.patch(
-    "/{user_id}/accept",
-    summary="Accept a follow request",
-    status_code=status.HTTP_204_NO_CONTENT,
-)
-def accept_follow_request(
-    user_id: int,
-    current_user=Depends(get_current_user),
-    follow_service: FollowService = Depends(get_follow_service),
-):
-    follow_service.accept_follow_request(
-        follower_id=user_id, followee_id=current_user.id
-    )
-
-
-@router.delete(
-    "/{user_id}/reject",
-    summary="Accept a follow request",
-    status_code=status.HTTP_204_NO_CONTENT,
-)
-def reject_follow_request(
-    user_id: int,
-    current_user=Depends(get_current_user),
-    follow_service: FollowService = Depends(get_follow_service),
-):
-    follow_service.reject_follow_request(
-        follower_id=user_id, followee_id=current_user.id
-    )

@@ -65,8 +65,8 @@ class FollowService:
         follow.accepted = True
         self.db.flush()
 
-    def reject_follow_request(self, follower_id: int, followee_id: int) -> None:
-        """Reject a follow request. (only pending requests can be rejected)"""
+    def remove_pending_request(self, follower_id: int, followee_id: int) -> None:
+        """Remove a pending follow request, either by sender or recipient."""
 
         follow = self._get_follow(follower_id, followee_id)
 
