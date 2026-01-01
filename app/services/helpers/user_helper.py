@@ -1,7 +1,9 @@
 from sqlalchemy.orm import Session
 
+from app.api.v1.schemas.user import UserListItemOut
 from app.core.exceptions.user import UserNotFound
 from app.db.models.user import User
+from app.services.helpers.subqueries.user_subqueries import UserSubqueries
 
 
 class UserHelper:
@@ -22,3 +24,31 @@ class UserHelper:
         if not user:
             raise UserNotFound()
         return user
+
+    # TODO : Test this method
+    def get_user_list_item_out(
+        self, user_id: int, current_user_id: int
+    ) -> UserListItemOut:
+        """Fetch minimal user info for lists (followers, owner in posts/comments)."""
+        owner_row = (
+            self.db.query(
+                User.id,
+                User.username,
+                UserSubqueries.followers_count_subq(self.db).label("followers_count"),
+                UserSubqueries.is_following_subq(self.db, current_user_id).label(
+                    "is_following"
+                ),
+            )
+            .filter(User.id == user_id)
+            .first()
+        )
+
+        if not owner_row:
+            raise UserNotFound()
+
+        return UserListItemOut(
+            id=owner_row.id,
+            username=owner_row.username,
+            is_following=owner_row.is_following,
+            followers_count=owner_row.followers_count,
+        )

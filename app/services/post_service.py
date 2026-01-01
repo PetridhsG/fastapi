@@ -10,14 +10,10 @@ from app.api.v1.schemas.post import (
     PostListItemOut,
     PostOut,
 )
-from app.api.v1.schemas.user import UserListItemOut
 from app.core.exceptions.post import PostNotFound, PostUserNotAllowed
-from app.core.exceptions.user import UserNotFound
 from app.db.models.post import Post
-from app.db.models.reaction import Reaction
-from app.db.models.user import User
+from app.services.helpers.reaction_helper import ReactionHelper
 from app.services.helpers.subqueries.post_subqueries import PostSubqueries
-from app.services.helpers.subqueries.user_subqueries import UserSubqueries
 from app.services.helpers.user_helper import UserHelper
 
 
@@ -25,6 +21,7 @@ class PostService:
     def __init__(self, db: Session):
         self.db = db
         self.user_helper = UserHelper(db)
+        self.reaction_helper = ReactionHelper(db)
 
     def create_post(
         self, current_user_id: int, post_create: PostCreate
@@ -54,49 +51,23 @@ class PostService:
         ).all()
 
     def get_post(self, current_user_id: int, post_id: int) -> PostOut:
-        """Get a post by ID; raises PostNotFound if not found."""
+        """Get a single post by ID."""
 
+        # Fetch post base info
         query = self._build_post_base_query(current_user_id).filter(Post.id == post_id)
-
         post_row = query.first()
         if not post_row:
             raise PostNotFound()
 
-        # Owner info using subqueries
-        owner_row = (
-            self.db.query(
-                User.id,
-                User.username,
-                UserSubqueries.followers_count_subq(self.db).label("followers_count"),
-                UserSubqueries.is_following_subq(self.db, current_user_id).label(
-                    "is_following"
-                ),
-            )
-            .filter(User.id == post_row.owner_id)
-            .first()
+        # Fetch minimal owner info
+        owner_out = self.user_helper.get_user_list_item_out(
+            post_row.owner_id, current_user_id
         )
 
-        if not owner_row:
-            raise UserNotFound()
+        # Fetch reactions grouped by type
+        reactions_by_type = self.reaction_helper.get_reactions_by_type(post_id)
 
-        owner_out = UserListItemOut(
-            id=owner_row.id,
-            username=owner_row.username,
-            is_following=owner_row.is_following,
-            followers_count=owner_row.followers_count,
-        )
-
-        # Reactions grouped by type
-        reactions_by_type_rows = (
-            self.db.query(Reaction.type, func.count(Reaction.user_id).label("count"))
-            .filter(Reaction.post_id == post_id)
-            .group_by(Reaction.type)
-            .all()
-        )
-        reactions_by_type = {r.type.value: r.count for r in reactions_by_type_rows}
-
-        # Build PostOut
-        post_out = PostOut(
+        return PostOut(
             id=post_row.id,
             title=post_row.title,
             content=post_row.content,
@@ -108,8 +79,6 @@ class PostService:
             owner=owner_out,
             reactions_by_type=reactions_by_type,
         )
-
-        return post_out
 
     def update_post(
         self,
