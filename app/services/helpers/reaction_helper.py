@@ -23,5 +23,9 @@ class ReactionHelper:
             .group_by(Reaction.type)
             .all()
         )
+        reactions_by_type = {r.type.value: r.count for r in reactions_by_type_rows}
 
-        return {r.type: r.count for r in reactions_by_type_rows}
+        for r_type in ReactionType:
+            reactions_by_type.setdefault(r_type.value, 0)
+
+        return reactions_by_type

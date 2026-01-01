@@ -61,33 +61,12 @@ class UserService:
         """Get current user settings; raises UserNotFound if not found."""
         return self.user_helper.get_user_by_id(user_id)
 
-    # TODO: refactor common code
     def search_users(
         self, current_user_id: int, query: str, limit: int = 10
     ) -> List[UserListItemOut]:
-        """Search users by username."""
-        q = query.strip().lower()
-
-        return (
-            self.db.query(
-                User.id,
-                User.username,
-                UserSubqueries.followers_count_subq(self.db).label("followers_count"),
-                UserSubqueries.is_following_subq(self.db, current_user_id).label(
-                    "is_following"
-                ),
-            )
-            .filter(User.username.ilike(f"%{q}%"))
-            .order_by(
-                case(
-                    (func.lower(User.username) == q, 0),
-                    (func.lower(User.username).like(f"{q}%"), 1),
-                    else_=2,
-                ),
-                User.username.asc(),
-            )
-            .limit(limit)
-            .all()
+        """Search users by username with pagination."""
+        return self._query_users(
+            current_user_id=current_user_id, search=query, limit=limit
         )
 
     def get_user_by_username(
@@ -96,7 +75,6 @@ class UserService:
         """Get user by username; raises UserNotFound if not found."""
         return self._get_public_user(current_user_id=current_user_id, username=username)
 
-    # TODO: refactor common code with get_user_following
     def get_user_followers(
         self,
         current_user_id: int,
@@ -105,36 +83,20 @@ class UserService:
         offset: int = 0,
         search: Optional[str] = "",
     ) -> List[UserListItemOut]:
-        """Get followers of a user; raises UserNotFound if not found."""
-        q = (search or "").strip().lower()
-
-        return (
-            self.db.query(
-                User.id,
-                User.username,
-                UserSubqueries.followers_count_subq(self.db).label("followers_count"),
-                UserSubqueries.is_following_subq(self.db, current_user_id).label(
-                    "is_following"
-                ),
-            )
-            .select_from(User)
-            .join(Follow, User.id == Follow.follower_id)
-            .filter(Follow.followee_id == target_user_id, Follow.accepted.is_(True))
-            .filter(User.username.ilike(f"%{q}%"))
-            .order_by(
-                case(
-                    (func.lower(User.username) == q, 0),
-                    (func.lower(User.username).like(f"{q}%"), 1),
-                    else_=2,
-                ),
-                User.username.asc(),
-            )
-            .limit(limit)
-            .offset(offset)
-            .all()
+        """Get followers of the target user."""
+        return self._query_users(
+            current_user_id=current_user_id,
+            search=search,
+            join_model=Follow,
+            join_condition=User.id == Follow.follower_id,
+            join_filters=[
+                Follow.followee_id == target_user_id,
+                Follow.accepted.is_(True),
+            ],
+            limit=limit,
+            offset=offset,
         )
 
-    # TODO: refactor common code with get_user_followers
     def get_user_following(
         self,
         current_user_id: int,
@@ -143,33 +105,18 @@ class UserService:
         offset: int = 0,
         search: Optional[str] = "",
     ) -> List[UserListItemOut]:
-        """Get following of a user; assumes access already checked."""
-        q = (search or "").strip().lower()
-
-        return (
-            self.db.query(
-                User.id,
-                User.username,
-                UserSubqueries.followers_count_subq(self.db).label("followers_count"),
-                UserSubqueries.is_following_subq(self.db, current_user_id).label(
-                    "is_following"
-                ),
-            )
-            .select_from(User)
-            .join(Follow, User.id == Follow.followee_id)
-            .filter(Follow.follower_id == target_user_id, Follow.accepted.is_(True))
-            .filter(User.username.ilike(f"%{q}%"))
-            .order_by(
-                case(
-                    (func.lower(User.username) == q, 0),
-                    (func.lower(User.username).like(f"{q}%"), 1),
-                    else_=2,
-                ),
-                User.username.asc(),
-            )
-            .limit(limit)
-            .offset(offset)
-            .all()
+        """Get users that the target user is following."""
+        return self._query_users(
+            current_user_id=current_user_id,
+            search=search,
+            join_model=Follow,
+            join_condition=User.id == Follow.followee_id,
+            join_filters=[
+                Follow.follower_id == target_user_id,
+                Follow.accepted.is_(True),
+            ],
+            limit=limit,
+            offset=offset,
         )
 
     def update_user(self, user_id: int, data: UserEdit) -> User:
@@ -242,3 +189,49 @@ class UserService:
             user_dict["is_following"] = None
 
         return UserPublicOut(**user_dict)
+
+    def _query_users(
+        self,
+        current_user_id: int,
+        search: Optional[str] = "",
+        join_model=None,
+        join_condition=None,
+        join_filters=None,
+        limit: int = 10,
+        offset: int = 0,
+    ) -> List[UserListItemOut]:
+        """
+        Centralized user query logic.
+        - join_model: SQLAlchemy model to join (e.g., Follow)
+        - join_condition: the ON condition for join
+        - join_filters: additional filters after join
+        """
+        q = (search or "").strip().lower()
+
+        query = self.db.query(
+            User.id,
+            User.username,
+            UserSubqueries.followers_count_subq(self.db).label("followers_count"),
+            UserSubqueries.is_following_subq(self.db, current_user_id).label(
+                "is_following"
+            ),
+        )
+
+        if join_model:
+            query = query.join(join_model, join_condition)
+        if join_filters:
+            query = query.filter(*join_filters)
+
+        if q:
+            query = query.filter(User.username.ilike(f"%{q}%"))
+
+        query = query.order_by(
+            case(
+                (func.lower(User.username) == q, 0),
+                (func.lower(User.username).like(f"{q}%"), 1),
+                else_=2,
+            ),
+            User.username.asc(),
+        )
+
+        return query.limit(limit).offset(offset).all()

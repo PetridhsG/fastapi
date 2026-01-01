@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Query, status
 from app.api.v1.dependencies import get_comment_service
 from app.api.v1.schemas.comment import (
     CommentCreate,
-    CommentCreateOut,
+    CommentCreatedOut,
     CommentEdit,
     CommentOut,
 )
@@ -20,7 +20,7 @@ router = APIRouter(prefix=prefix, tags=["Comments"])
     "",
     summary="Add a comment to a post",
     status_code=status.HTTP_201_CREATED,
-    response_model=CommentCreateOut,
+    response_model=CommentCreatedOut,
 )
 def add_post_comment(
     comment: CommentCreate,
@@ -51,7 +51,7 @@ def get_post_comments(
 @router.patch(
     "/{comment_id}",
     summary="Update a comment to a post",
-    response_model=CommentCreateOut,
+    response_model=CommentCreatedOut,
 )
 def update_post_comment(
     comment: CommentEdit,

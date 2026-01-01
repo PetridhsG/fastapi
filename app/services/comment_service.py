@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.api.v1.schemas.comment import (
     CommentCreate,
-    CommentCreateOut,
+    CommentCreatedOut,
     CommentEdit,
     CommentOut,
 )
@@ -48,7 +48,7 @@ class CommentService:
             .all()
         )
 
-        result = []
+        result: List[CommentOut] = []
         for comment in comments:
             owner_out = self.user_helper.get_user_list_item_out(
                 user_id=comment.owner_id,
@@ -73,7 +73,7 @@ class CommentService:
         post_id: int,
         comment_id: int,
         comment_update: CommentEdit,
-    ) -> CommentCreateOut:
+    ) -> CommentCreatedOut:
         """Update a comment on a post and return minimal info."""
 
         comment = self._get_comment(current_user_id, post_id, comment_id)

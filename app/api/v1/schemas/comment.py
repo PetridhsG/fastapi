@@ -11,7 +11,7 @@ class CommentCreate(BaseModel):
     content: str
 
 
-class CommentCreateOut(BaseModel):
+class CommentCreatedOut(BaseModel):
     """Schema for comment data returned after creation."""
 
     id: int
