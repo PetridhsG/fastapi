@@ -45,31 +45,20 @@ def client(session):
     """
 
     def override_get_db():
-        try:
-            yield session
-        finally:
-            session.close()
+        yield session
 
     app.dependency_overrides[get_db] = override_get_db
-    yield TestClient(app)
+    return TestClient(app)
 
 
-# @pytest.fixture(scope="function")
-# def client(session):
-#     def override_get_db():
-#         yield session
-
-#     app.dependency_overrides[get_db] = override_get_db
-#     yield TestClient(app)
-#     app.dependency_overrides.clear()
-
-
-@pytest.fixture(scope="function")
+@pytest.fixture
 def authorized_client(client, test_users):
     """
-    TestClient with a logged-in user
+    TestClient with default logged-in user (test_users[0]),
+    but also supports manual login via a callable.
     """
 
+    # Default login
     response = client.post(
         "/api/v1/auth/login",
         data={
@@ -77,7 +66,18 @@ def authorized_client(client, test_users):
             "password": "User1Pass!",
         },
     )
-
     token = response.json()["access_token"]
     client.headers.update({"Authorization": f"Bearer {token}"})
+
+    # Also allow manual login
+    def _get(user_email: str, password: str):
+        response = client.post(
+            "/api/v1/auth/login",
+            data={"username": user_email, "password": password},
+        )
+        token = response.json()["access_token"]
+        client.headers.update({"Authorization": f"Bearer {token}"})
+        return client
+
+    client.login_as = _get  # attach the callable to client
     return client

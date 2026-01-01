@@ -52,20 +52,17 @@ def follow_service(session: Session) -> FollowService:
 
 @pytest.fixture(scope="function")
 def test_users(session: Session):
-    """Creates three test users directly using the session."""
     users_data = [
         {
-            "username": "exampleUser1",
+            "username": "exampleuser1",
             "email": "user1@example.com",
             "password": "User1Pass!",
-            "bio": "",
             "is_private": False,
         },
         {
-            "username": "exampleUser2",
+            "username": "exampleuser2",
             "email": "user2@example.com",
             "password": "User2Pass!",
-            "bio": "This is user 2's bio.",
             "is_private": True,
         },
     ]
@@ -76,7 +73,6 @@ def test_users(session: Session):
             username=u["username"],
             email=u["email"],
             hashed_password=hash_password(u["password"]),
-            bio=u["bio"],
             is_private=u["is_private"],
         )
         session.add(user)
@@ -93,7 +89,9 @@ def test_users_with_follow(user_service: UserService, session: Session):
     - user1: follows user2 and user3
     - user2: follows user3, has user1 as follower
     - user3: follows no one, has user1 and user3 as followers
-    - user4: follows no one, has no followers
+    - user4: follows no one, has no followers and no follow requests
+    - user5: sent follow request to user1 and user6 (not accepted)
+    - user6: have follow request from user5 (not accepted)
     """
 
     users_data = [
@@ -106,6 +104,8 @@ def test_users_with_follow(user_service: UserService, session: Session):
             password="User4Pass!",
             is_private=True,
         ),
+        UserCreate(username="user5", email="user5@email.com", password="User5Pass!"),
+        UserCreate(username="user6", email="user6@email.com", password="User6Pass!"),
     ]
     users = [user_service.create_user(u) for u in users_data]
 
@@ -114,6 +114,8 @@ def test_users_with_follow(user_service: UserService, session: Session):
             Follow(follower_id=users[0].id, followee_id=users[1].id, accepted=True),
             Follow(follower_id=users[0].id, followee_id=users[2].id, accepted=True),
             Follow(follower_id=users[1].id, followee_id=users[2].id, accepted=True),
+            Follow(follower_id=users[4].id, followee_id=users[0].id, accepted=False),
+            Follow(follower_id=users[4].id, followee_id=users[5].id, accepted=False),
         ]
     )
 
@@ -124,6 +126,8 @@ def test_users_with_follow(user_service: UserService, session: Session):
         "user2": users[1],
         "user3": users[2],
         "user4": users[3],
+        "user5": users[4],
+        "user6": users[5],
     }
 
 

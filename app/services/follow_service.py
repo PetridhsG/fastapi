@@ -79,7 +79,7 @@ class FollowService:
     def get_follow_requests(
         self, user_id: int, incoming: bool = True
     ) -> List[FollowRequestOut]:
-        """Get all pending follow requests sent to the user or by the user."""
+        """Get all follow requests sent to the user or by the user."""
 
         if incoming:
             filter_condition = Follow.followee_id == user_id

@@ -47,7 +47,7 @@ def remove_follower(
     current_user=Depends(get_current_user),
     follow_service: FollowService = Depends(get_follow_service),
 ):
-    follow_service.remove_follower(follower_id=user_id, followee_id=current_user.id)
+    follow_service.unfollow_user(follower_id=user_id, followee_id=current_user.id)
 
 
 @router.get(

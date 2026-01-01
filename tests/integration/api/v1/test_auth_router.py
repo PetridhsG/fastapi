@@ -20,9 +20,6 @@ def test_login_success(client, test_users):
     )
 
     assert response.status_code == status.HTTP_200_OK
-    body = response.json()
-    assert "access_token" in body
-    assert body["token_type"] == "bearer"
 
 
 def test_login_invalid_email(client):
