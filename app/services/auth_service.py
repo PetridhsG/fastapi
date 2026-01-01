@@ -11,7 +11,7 @@ class AuthService:
     def __init__(self, db: Session):
         self.db = db
 
-    def login_user(self, user_credentials: OAuth2PasswordRequestForm) -> User:
+    def login_user(self, user_credentials: OAuth2PasswordRequestForm):
         """Authenticate user and return access token; raises InvalidLoginCredentials on failure."""
         user = (
             self.db.query(User).filter(User.email == user_credentials.username).first()

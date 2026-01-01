@@ -57,7 +57,7 @@ class UserService:
         user = self.user_helper.get_user_by_id(user_id)
         return self._get_public_user(current_user_id=user_id, username=user.username)
 
-    def get_current_user_settings(self, user_id: int) -> UserSettingsOut | None:
+    def get_current_user_settings(self, user_id: int) -> UserSettingsOut:
         """Get current user settings; raises UserNotFound if not found."""
         return self.user_helper.get_user_by_id(user_id)
 

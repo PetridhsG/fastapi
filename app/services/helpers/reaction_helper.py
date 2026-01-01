@@ -7,7 +7,6 @@ from app.core.enums import ReactionType
 from app.db.models import Reaction
 
 
-# TODO: Add tests
 class ReactionHelper:
     def __init__(self, db: Session):
         self.db = db

@@ -54,28 +54,32 @@ class PostService:
         """Get a single post by ID."""
 
         # Fetch post base info
-        query = self._build_post_base_query(current_user_id).filter(Post.id == post_id)
-        post_row = query.first()
-        if not post_row:
+        post = (
+            self._build_post_base_query(current_user_id)
+            .filter(Post.id == post_id)
+            .first()
+        )
+
+        if not post:
             raise PostNotFound()
 
         # Fetch minimal owner info
         owner_out = self.user_helper.get_user_list_item_out(
-            post_row.owner_id, current_user_id
+            post.owner_id, current_user_id
         )
 
         # Fetch reactions grouped by type
         reactions_by_type = self.reaction_helper.get_reactions_by_type(post_id)
 
         return PostOut(
-            id=post_row.id,
-            title=post_row.title,
-            content=post_row.content,
-            owner_id=post_row.owner_id,
-            created_at=post_row.created_at,
-            comments_count=post_row.comments_count,
-            reactions_count=post_row.reactions_count,
-            user_reacted=post_row.user_reacted,
+            id=post.id,
+            title=post.title,
+            content=post.content,
+            owner_id=post.owner_id,
+            created_at=post.created_at,
+            comments_count=post.comments_count,
+            reactions_count=post.reactions_count,
+            user_reacted=post.user_reacted,
             owner=owner_out,
             reactions_by_type=reactions_by_type,
         )
@@ -92,6 +96,7 @@ class PostService:
 
         if post_update.title is not None:
             post.title = post_update.title
+
         if post_update.content is not None:
             post.content = post_update.content
 
@@ -108,6 +113,7 @@ class PostService:
         self.db.flush()
 
     def _build_post_base_query(self, current_user_id: int):
+        """Build a base query for posts."""
         comments_count_sq = PostSubqueries.comments_count_subq(self.db)
         reactions_count_sq = PostSubqueries.reactions_count_subq(self.db)
         user_reaction_sq = PostSubqueries.user_reaction_subq(self.db, current_user_id)
@@ -136,7 +142,7 @@ class PostService:
 
     def _get_post_for_user(self, current_user_id: int, post_id: int) -> Post:
         """Fetch a post and ensure the current user is allowed to modify it."""
-        post = self.db.query(Post).filter(Post.id == post_id).first()
+        post = self.db.get(Post, post_id)
 
         if not post:
             raise PostNotFound()

@@ -113,6 +113,7 @@ class CommentService:
             .filter(Comment.id == comment_id, Comment.post_id == post_id)
             .first()
         )
+        
         if not comment:
             raise CommentNotFound()
 

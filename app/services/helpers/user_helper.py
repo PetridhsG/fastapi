@@ -25,7 +25,6 @@ class UserHelper:
             raise UserNotFound()
         return user
 
-    # TODO : Test this method
     def get_user_list_item_out(
         self, user_id: int, current_user_id: int
     ) -> UserListItemOut:

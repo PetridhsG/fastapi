@@ -8,6 +8,7 @@ from app.core.config import Settings
 from app.db.database import Base, get_db
 from app.main import app
 from tests.fixtures.services_fixtures import *  # noqa: F403
+from tests.fixtures.user_fixtures import *  # noqa: F403
 
 
 class TestSettings(Settings):
