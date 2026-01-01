@@ -7,8 +7,13 @@ from pytest_mock import mocker  # noqa: F401
 
 from app.api.v1.schemas.auth import TokenData
 from app.core.exceptions.auth import AuthInvalidJWT, AuthUserCannotBeAuthenticated
+from app.core.exceptions.post import PostNotFound
 from app.core.exceptions.user import UserNotAllowedToViewResource, UserNotFound
-from app.core.security.access_controls import can_view_target_user, get_current_user
+from app.core.security.access_controls import (
+    can_view_post,
+    can_view_target_user,
+    get_current_user,
+)
 from app.core.security.jwt import (
     create_access_token,
     verify_access_token,
@@ -132,7 +137,7 @@ def test_target_user_public():
     current_user = SimpleNamespace(id=1)
 
     result = can_view_target_user(username="public", db=db, current_user=current_user)
-    assert result == public_user
+    assert result == public_user.id
 
 
 def test_target_user_is_current_user():
@@ -141,7 +146,7 @@ def test_target_user_is_current_user():
     current_user = SimpleNamespace(id=1)
 
     result = can_view_target_user(username="private", db=db, current_user=current_user)
-    assert result == private_user
+    assert result == private_user.id
 
 
 def test_target_user_private_followed():
@@ -151,7 +156,7 @@ def test_target_user_private_followed():
     current_user = SimpleNamespace(id=1)
 
     result = can_view_target_user(username="private", db=db, current_user=current_user)
-    assert result == private_user
+    assert result == private_user.id
 
 
 def test_target_user_private_not_followed():
@@ -161,3 +166,72 @@ def test_target_user_private_not_followed():
 
     with pytest.raises(UserNotAllowedToViewResource):
         can_view_target_user(username="private", db=db, current_user=current_user)
+
+
+# -----------------------------
+# Can view post Tests
+# -----------------------------
+
+
+def test_post_not_found():
+    db = make_mock_db(user=None)
+    current_user = SimpleNamespace(id=1)
+    with pytest.raises(PostNotFound):
+        can_view_post(post_id=1, db=db, current_user=current_user)
+
+
+def test_post_owner_not_found():
+    post = SimpleNamespace(id=1, owner_id=2)
+    db = make_mock_db(
+        user=post, follow_exists=None
+    )  # post returned first, then owner = None
+    current_user = SimpleNamespace(id=1)
+    with pytest.raises(UserNotFound):
+        can_view_post(post_id=1, db=db, current_user=current_user)
+
+
+def test_post_public_owner():
+    post = SimpleNamespace(id=1, owner_id=2)
+    owner = SimpleNamespace(id=2, is_private=False)
+    db = make_mock_db(user=post, follow_exists=owner)
+    current_user = SimpleNamespace(id=1)
+
+    result = can_view_post(post_id=1, db=db, current_user=current_user)
+    assert result == post.id
+
+
+def test_post_private_owner_self():
+    post = SimpleNamespace(id=1, owner_id=1)
+    owner = SimpleNamespace(id=1, is_private=True)
+    db = make_mock_db(user=post, follow_exists=owner)
+    current_user = SimpleNamespace(id=1)
+
+    result = can_view_post(post_id=1, db=db, current_user=current_user)
+    assert result == post.id
+
+
+def test_post_private_owner_followed():
+    post = SimpleNamespace(id=1, owner_id=2)
+    owner = SimpleNamespace(id=2, is_private=True)
+    follow = SimpleNamespace()
+    db = make_mock_db(user=None)
+
+    db.query().filter().first.side_effect = [post, owner, follow]
+
+    current_user = SimpleNamespace(id=1)
+
+    result = can_view_post(post_id=1, db=db, current_user=current_user)
+    assert result == post.id
+
+
+def test_post_private_owner_not_followed():
+    post = SimpleNamespace(id=1, owner_id=2)
+    owner = SimpleNamespace(id=2, is_private=True)
+    db = make_mock_db(user=None)
+
+    db.query().filter().first.side_effect = [post, owner, None]
+
+    current_user = SimpleNamespace(id=1)
+
+    with pytest.raises(UserNotAllowedToViewResource):
+        can_view_post(post_id=1, db=db, current_user=current_user)

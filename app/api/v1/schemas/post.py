@@ -1,7 +1,9 @@
 from datetime import datetime
+from typing import Dict
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.api.v1.schemas.user import UserListItemOut
 from app.core.enums import ReactionType
 
 
@@ -41,3 +43,24 @@ class PostListItemOut(BaseModel):
     user_reacted: ReactionType | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class PostOut(PostListItemOut):
+    """Schema for post data returned when fetching a single post."""
+
+    owner: UserListItemOut
+    reactions_by_type: Dict[ReactionType, int]
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class PostEdit(BaseModel):
+    """Schema for editing a post."""
+
+    title: str | None = Field(
+        None,
+        min_length=4,
+        max_length=40,
+        description="Post title must be between 4 and 40 characters",
+    )
+    content: str | None

@@ -132,7 +132,7 @@ def get_user_by_username(
     response_model=List[UserListItemOut],
 )
 def get_user_followers(
-    target_user=Depends(can_view_target_user),
+    target_user_id=Depends(can_view_target_user),
     current_user=Depends(get_current_user),
     user_service: UserService = Depends(get_user_service),
     limit: int = Query(10, ge=1, le=50),
@@ -141,7 +141,7 @@ def get_user_followers(
 ):
     return user_service.get_user_followers(
         current_user.id,
-        target_user.id,
+        target_user_id,
         limit=limit,
         offset=offset,
         search=search,
@@ -154,7 +154,7 @@ def get_user_followers(
     response_model=List[UserListItemOut],
 )
 def get_user_following(
-    target_user=Depends(can_view_target_user),
+    target_user_id=Depends(can_view_target_user),
     current_user=Depends(get_current_user),
     user_service: UserService = Depends(get_user_service),
     limit: int = Query(10, ge=1, le=50),
@@ -163,7 +163,7 @@ def get_user_following(
 ):
     return user_service.get_user_following(
         current_user.id,
-        target_user.id,
+        target_user_id,
         limit=limit,
         offset=offset,
         search=search,
@@ -176,15 +176,15 @@ def get_user_following(
     response_model=List[PostListItemOut],
 )
 def get_user_posts(
-    target_user=Depends(can_view_target_user),
+    target_user_id=Depends(can_view_target_user),
     current_user=Depends(get_current_user),
     limit: int = Query(10, ge=1, le=50),
     offset: int = Query(0, ge=0),
     post_service: PostService = Depends(get_post_service),
 ):
-    return post_service.get_posts_by_username(
+    return post_service.get_user_posts(
         current_user.id,
-        target_user.id,
+        target_user_id,
         limit=limit,
         offset=offset,
     )

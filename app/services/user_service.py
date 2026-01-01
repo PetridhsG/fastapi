@@ -61,6 +61,7 @@ class UserService:
         """Get current user settings; raises UserNotFound if not found."""
         return self.user_helper.get_user_by_id(user_id)
 
+    # TODO: refactor common code
     def search_users(
         self, current_user_id: int, query: str, limit: int = 10
     ) -> List[UserListItemOut]:
@@ -95,6 +96,7 @@ class UserService:
         """Get user by username; raises UserNotFound if not found."""
         return self._get_public_user(current_user_id=current_user_id, username=username)
 
+    # TODO: refactor common code with get_user_following
     def get_user_followers(
         self,
         current_user_id: int,
@@ -132,6 +134,7 @@ class UserService:
             .all()
         )
 
+    # TODO: refactor common code with get_user_followers
     def get_user_following(
         self,
         current_user_id: int,
