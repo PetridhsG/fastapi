@@ -1,10 +1,12 @@
 import pytest
 from sqlalchemy.orm import Session
 
+from app.core.enums import ReactionType
 from app.core.security.password import hash_password
 from app.db.models.comment import Comment
 from app.db.models.follow import Follow
 from app.db.models.post import Post
+from app.db.models.reaction import Reaction
 from app.db.models.user import User
 
 
@@ -93,7 +95,7 @@ def test_users_with_follow(session: Session):
     ]
 
     session.add_all(users)
-    session.flush()  # ensure user IDs exist
+    session.flush()
 
     follows = [
         # user1 follows user2 and user3
@@ -150,7 +152,7 @@ def test_users_with_posts(session: Session):
     ]
 
     session.add_all(users)
-    session.flush()  # ensures user IDs are available
+    session.flush()
 
     posts = [
         # many posts user
@@ -253,6 +255,100 @@ def test_users_with_posts_comments(session: Session):
     ]
 
     session.add_all(comments)
+    session.commit()
+
+    return users
+
+
+@pytest.fixture(scope="function")
+def test_users_with_posts_reactions(session: Session):
+    """
+    Creates:
+
+    Users:
+    - user1: 2 posts
+        - post1: liked by user2
+        - post2: liked by user1
+    - user2: 1 post
+        - post3: liked by user1
+    - user3: no posts
+    """
+
+    users = {
+        "user_with_two_posts": User(
+            username="user1react",
+            email="user1react@example.com",
+            hashed_password=hash_password("Pass123!"),
+            is_private=False,
+        ),
+        "user_with_one_post": User(
+            username="user2react",
+            email="user2react@example.com",
+            hashed_password=hash_password("Pass123!"),
+            is_private=False,
+        ),
+        "user_without_posts": User(
+            username="user3react",
+            email="user3react@example.com",
+            hashed_password=hash_password("Pass123!"),
+            is_private=False,
+        ),
+    }
+
+    session.add_all(users.values())
+    session.flush()
+
+    posts = [
+        # user1 posts
+        Post(
+            title="User1 Post 1",
+            content="Content 1",
+            owner_id=users["user_with_two_posts"].id,
+        ),
+        Post(
+            title="User1 Post 2",
+            content="Content 2",
+            owner_id=users["user_with_two_posts"].id,
+        ),
+        # user2 post
+        Post(
+            title="User2 Post 1",
+            content="Content 3",
+            owner_id=users["user_with_one_post"].id,
+        ),
+    ]
+
+    session.add_all(posts)
+    session.flush()
+
+    reactions = [
+        # user_with_one_post reacts to user1's first post
+        Reaction(
+            user_id=users["user_with_one_post"].id,
+            post_id=posts[0].id,
+            type=ReactionType.like,
+        ),
+        # user_without_posts reacts to user1's first post
+        Reaction(
+            user_id=users["user_without_posts"].id,
+            post_id=posts[0].id,
+            type=ReactionType.wow,
+        ),
+        # user_with_two_posts reacts to their own second post
+        Reaction(
+            user_id=users["user_with_two_posts"].id,
+            post_id=posts[1].id,
+            type=ReactionType.like,
+        ),
+        # user_with_two_posts reacts to user2's post
+        Reaction(
+            user_id=users["user_with_two_posts"].id,
+            post_id=posts[2].id,
+            type=ReactionType.like,
+        ),
+    ]
+
+    session.add_all(reactions)
     session.commit()
 
     return users
