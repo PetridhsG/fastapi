@@ -37,8 +37,8 @@ class PostService:
         self,
         current_user_id: int,
         target_user_id: int,
-        limit: int,
-        offset: int,
+        limit: int = 10,
+        offset: int = 0,
     ) -> List[PostListItemOut]:
         """Get posts for a given user with pagination."""
 

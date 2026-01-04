@@ -143,8 +143,8 @@ def test_get_user_following(authorized_client, test_users_with_follow):
 # -----------------------------
 
 
-def test_get_user_posts(authorized_client, user_with_posts):
-    user = user_with_posts
+def test_get_user_posts(authorized_client, test_users_with_posts):
+    user = test_users_with_posts["user_with_many_posts"]
     response = authorized_client.get(f"{prefix}/{user.username}/posts")
 
     assert response.status_code == status.HTTP_200_OK
