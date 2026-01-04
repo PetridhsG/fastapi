@@ -1,9 +1,5 @@
-from os import curdir
-
 import pytest  # noqa: F401
 from fastapi import status
-
-from app.api.v1.schemas.post import PostEdit
 
 prefix = "/api/v1/posts"
 
@@ -11,6 +7,8 @@ prefix = "/api/v1/posts"
 # -----------------------------
 # Create post tests
 # -----------------------------
+
+
 def test_create_post_success(authorized_client):
 
     post_data = {

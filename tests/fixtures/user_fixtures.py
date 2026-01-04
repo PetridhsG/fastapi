@@ -2,6 +2,7 @@ import pytest
 from sqlalchemy.orm import Session
 
 from app.core.security.password import hash_password
+from app.db.models.comment import Comment
 from app.db.models.follow import Follow
 from app.db.models.post import Post
 from app.db.models.user import User
@@ -168,3 +169,90 @@ def test_users_with_posts(session: Session):
         "user_with_single_post": users[1],
         "user_without_posts": users[2],
     }
+
+
+@pytest.fixture(scope="function")
+def test_users_with_posts_comments(session: Session):
+    """
+    Creates:
+
+    Users:
+    - user1: 2 posts
+        - post1: 2 comments (by user2)
+        - post2: 0 comments
+    - user2: 1 post
+        - post3: 1 comment (by user1)
+    - user3: no posts
+    """
+
+    users = {
+        "user_with_two_posts": User(
+            username="user1comments",
+            email="user1comments@example.com",
+            hashed_password=hash_password("Pass123!"),
+            is_private=False,
+        ),
+        "user_with_one_post": User(
+            username="user2comments",
+            email="user2comments@example.com",
+            hashed_password=hash_password("Pass123!"),
+            is_private=False,
+        ),
+        "user_without_posts": User(
+            username="user3comments",
+            email="user3comments@example.com",
+            hashed_password=hash_password("Pass123!"),
+            is_private=False,
+        ),
+    }
+
+    session.add_all(users.values())
+    session.flush()
+
+    posts = [
+        # user1 posts
+        Post(
+            title="User1 Post 1",
+            content="Content 1",
+            owner_id=users["user_with_two_posts"].id,
+        ),
+        Post(
+            title="User1 Post 2",
+            content="Content 2",
+            owner_id=users["user_with_two_posts"].id,
+        ),
+        # user2 post
+        Post(
+            title="User2 Post 1",
+            content="Content 3",
+            owner_id=users["user_with_one_post"].id,
+        ),
+    ]
+
+    session.add_all(posts)
+    session.flush()
+
+    comments = [
+        # user2 comments on user1 post1
+        Comment(
+            content="Nice post!",
+            post_id=posts[0].id,
+            owner_id=users["user_with_one_post"].id,
+        ),
+        Comment(
+            content="I agree!",
+            post_id=posts[0].id,
+            owner_id=users["user_with_one_post"].id,
+        ),
+        # user1 comments on user2 post
+        Comment(
+            content="Thanks for sharing",
+            post_id=posts[2].id,
+            owner_id=users["user_with_two_posts"].id,
+        ),
+    ]
+
+    session.add_all(comments)
+    session.commit()
+
+    return users
